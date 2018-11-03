@@ -1,3 +1,13 @@
+////////////////////////////////////////////////////////////////////////
+/////////////////////Computer Systems Lab 2/////////////////////////////
+////////////////////////////////////////////////////////////////////////
+///////////////Dylan Banh, Marisa Liu, Solomon Wang/////////////////////
+/////////////////////////////////////////////////////////////////////////
+
+#include <stdio.h>
+#include <string.h>
+
+
 all assembly language in lowercase, dont worry about upper
 everything is in offsets
 **offsets(in terms of words) are in relation to the next line of where they are called
@@ -17,8 +27,18 @@ instructions limited to 100 instructions
   statistics - utilization of pipeline stage and total execution time
 
 code should include:
-char *progScanner()
- take in file
+char *filename;                 //name of file to read
+FILE *fp;
+fp = fopen(filename, "r");
+char *currentLine;
+char *line;
+
+
+char progScanner(currentLine){
+line = strtok(currentLine, " ,()");           //split by spaces, commas, parentheses
+}
+  
+  take in file
  parse line by line
  should be able to take in names and numbers - eg. zero and 0
  remove duplicate commas, spaces, parenthesises, etc.
@@ -35,7 +55,12 @@ struct inst parser()
 	 not all fields will be used for each line
   if illegal opcode, error in simulation and stops
 
-void IF()
+void IF(){
+
+
+}
+
+
 void ID()
 void EX()
 void MEM()
