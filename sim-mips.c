@@ -67,14 +67,14 @@ strcpy(currentLine, copy);     //copy end result to currentLine
  
 
 
-void main(){
-char *filename;                 //name of file to read
-FILE *fp;
+//void main(){
+//char *filename;                 //name of file to read
+//FILE *fp;
 //fp = fopen(filename, "r");
 //char *currentLine;
-}
+//}
 
-
+/*
 ///Structure that holds data about the type of instruction 
 struct inst{
   char* type;
@@ -84,7 +84,7 @@ struct inst{
   int rd;
   int Imm;
 }
- 
+*/ 
 char *regNumberConverter(char *line){
    /*goes through line until reaches $ 
     * take the string to the right of the $ until whitespace
@@ -138,7 +138,8 @@ char *regNumberConverter(char *line){
 	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 		    if((line[pos-1]-'0')<8){
 				regNum = 8+(line[pos-1]-'0'); //register number in int
-				itoa(regNum, regChar, 10);    //convert to str
+				//itoa(regNum, regChar, 10);    //convert to str
+				sprintf(regChar,"%d", regNum);
 				if(regNum > 9){					//if regNum double digit
 				  newLine[newPos++] = regChar[0];
 				  newLine[newPos++] = regChar[1];
@@ -151,7 +152,8 @@ char *regNumberConverter(char *line){
 			 }
 			 else{
 				regNum = 16+(line[pos-1]-'0'); //register number in int
-				itoa(regNum, regChar, 10);    //convert to str
+				//itoa(regNum, regChar, 10);    //convert to str
+				sprintf(regChar,"%d", regNum);
 				newLine[newPos++] = regChar[0];
 				newLine[newPos++] = regChar[1];
 			   newLine[newPos++] = ' ';
@@ -164,8 +166,9 @@ char *regNumberConverter(char *line){
 	     	 if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 		    if((line[pos-1]-'0')<8){
 	 		   regNum = 16+(line[pos-1]-'0'); //register number in int
-		  	   itoa(regNum, regChar, 10);    //convert to str
-			   newLine[newPos++] = regChar[0];
+		  	   //itoa(regNum, regChar, 10);    //convert to str
+	 	   	sprintf(regChar,"%d", regNum);	
+				newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = regChar[1];
 			   newLine[newPos++] = ' ';
 			 }
@@ -184,8 +187,9 @@ char *regNumberConverter(char *line){
 	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char 
 			 if((line[pos-1]-'0')<4){
 	 		   regNum = 4+(line[pos-1]-'0'); //register number in int
-		      itoa(regNum, regChar, 10);    //convert to str
-      	   newLine[newPos++] = regChar[0];
+		      //itoa(regNum, regChar, 10);    //convert to str
+      	   sprintf(regChar,"%d", regNum);
+				newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = ' ';
 			 }
 			 else{return "e";}
@@ -197,8 +201,9 @@ char *regNumberConverter(char *line){
 	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 			 if((line[pos-1]-'0')<2){
 	 		   regNum = 2+(line[pos-1]-'0'); //register number in int
-		      itoa(regNum, regChar, 10);    //convert to str
-      	   newLine[newPos++] = regChar[0];
+		      //itoa(regNum, regChar, 10);    //convert to str
+      	 	sprintf(regChar,"%d", regNum);
+				newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = ' ';
 			 }
 			 else{return "e";}
@@ -210,8 +215,9 @@ char *regNumberConverter(char *line){
 	     	 if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 		  	 if((line[pos-1]-'0')<2){
 	 		   regNum = 26+(line[pos-1]-'0'); //register number in int
-		      itoa(regNum, regChar, 10);    //convert to str
-      	   newLine[newPos++] = regChar[0];
+		      //itoa(regNum, regChar, 10);    //convert to str
+      	   sprintf(regChar,"%d", regNum);
+				newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = regChar[1];
 				newLine[newPos++] = ' ';
 			 }
@@ -296,8 +302,8 @@ char *regNumberConverter(char *line){
 //////Parameter --> output of regNumberConvereter()///////////////////////////////////
 //////Return --> inst struct with fields for each of the files of MIPS instructions///
 //////////////////////////////////////////////////////////////////////////////////////
-struct inst parser(char *line){
-  inst *newInst;
+//struct inst parser(char *line){
+//  inst *newInst;
 /*  parse by whitespace and create an array of strings/numbers
    if(index 0 is ADD, SUB, MULT) --> contains opcode, rs, rt, rd, funct
 
