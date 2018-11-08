@@ -159,7 +159,7 @@ char *regNumberConverter(char *line){
 			   newLine[newPos++] = ' ';
 			 }
 		  }
-		  else{return "e";} //error if not a number
+		  else{return "a";} //error if not a number
 	   }
 	   else if(line[pos++] == 's'){				//check for s0-7 or sp
         if(isdigit(line[pos++])){		//if second char is number
@@ -172,7 +172,7 @@ char *regNumberConverter(char *line){
 			   newLine[newPos++] = regChar[1];
 			   newLine[newPos++] = ' ';
 			 }
-			 else{return "e";}
+			 else{return "b";}
 		  }
 		  else if(line[pos++] == 'p'){   //if sp
 	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
@@ -180,7 +180,7 @@ char *regNumberConverter(char *line){
 			 newLine[newPos++] = '9';
 			 newLine[newPos++] = ' ';
 		  }
-		  else{return "e";} //error if not a number
+		  else{return "c";} //error if not a number
 	   }
 	   else if(line[pos++] == 'a'){	//if a0-a3
         if(isdigit(line[pos++])){		
@@ -192,7 +192,7 @@ char *regNumberConverter(char *line){
 				newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = ' ';
 			 }
-			 else{return "e";}
+			 else{return "d";}
 		  }
 		  else{return "e";} //error if not a number
   	   }
@@ -206,9 +206,9 @@ char *regNumberConverter(char *line){
 				newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = ' ';
 			 }
-			 else{return "e";}
+			 else{return "f";}
 		  }
-		  else{return "e";} //error if not a number
+		  else{return "g";} //error if not a number
 	   }
 	   else if(line[pos++] == 'k'){	//if k0-k1
         if(isdigit(line[pos++])){		
@@ -221,9 +221,9 @@ char *regNumberConverter(char *line){
 			   newLine[newPos++] = regChar[1];
 				newLine[newPos++] = ' ';
 			 }
-			 else{return "e";}
+			 else{return "h";}
 		  }
-		  else{return "e";} //error if not a number
+		  else{return "i";} //error if not a number
 	   }
 	   //if doesnt begin with t, s, a, v, or k
 	   else if(line[pos++] == 'g'){ //check for gp
@@ -233,7 +233,7 @@ char *regNumberConverter(char *line){
 			 newLine[newPos++] = '8';
 			 newLine[newPos++] = ' ';
 		  }
-		  else{return "e";}
+		  else{return "j";}
 	   }
       else if(line[pos++] == 'f'){ //check for fp
 	     if(line[pos++] == 'p'){
@@ -242,7 +242,7 @@ char *regNumberConverter(char *line){
 			 newLine[newPos++] = '0';
 			 newLine[newPos++] = ' ';
 		  }
-		  else{return "e";}
+		  else{return "k";}
 	   }
 	   else if(line[pos++] == 'r'){	//check for ra
 		  if(line[pos++] == 'a'){
@@ -251,7 +251,7 @@ char *regNumberConverter(char *line){
 			 newLine[newPos++] = '1';
 			 newLine[newPos++] = ' ';
 		  }
-		  else{return "e";}
+		  else{return "l";}
 	   }
 	   else if(line[pos++] == 'z'){	//check for zero
 		  if(line[pos++] == 'e'){
@@ -261,11 +261,11 @@ char *regNumberConverter(char *line){
 			     newLine[newPos++] = '0';
 			     newLine[newPos++] = ' ';
 				}
-			   else{return "e";}
+			   else{return "m";}
 		    }
-		    else{return "e";}
+		    else{return "n";}
 		  }
-		  else{return "e";}
+		  else{return "o";}
 	   }
 	   else if(isdigit(line[pos++])){	//check if 0-31
 		  if((line[pos++] == ' ') || (isdigit(line[pos]))){
@@ -277,7 +277,7 @@ char *regNumberConverter(char *line){
 			 else{
             regNum = (line[pos-2]-'0');
 			 }
-			 if(regNum>31) return "e"; //error if number is >31
+			 if(regNum>31) return "p"; //error if number is >31
 			 if(isdigit(line[pos-1])){
 			   newLine[newPos++] = line[pos-2];
 			   newLine[newPos++] = line[pos-1];
@@ -288,9 +288,9 @@ char *regNumberConverter(char *line){
 				newLine[newPos++] = ' ';
 			 }
 		  }
-		  else{return "e";} 		//error if next digit is not empty or a number
+		  else{return "q";} 		//error if next digit is not empty or a number
 	   }
-	   else{return "e";}			//return error if no matches
+	   else{return "r";}			//return error if no matches
     }
 	 newLine[newPos++] = line[pos++];
   }
