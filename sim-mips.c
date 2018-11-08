@@ -119,7 +119,7 @@ char *regNumberConverter(char *line){
     * */
 //  takes in output of progScanner
 //  returns pointer to character string, which all register names are converted to numbers
-  char *newLine = malloc(sizeof(line));
+  char *newLine = (char *)malloc(strlen(line)*sizeof(char));
   char regChar[2];
   int regNum;
   int pos=0;
@@ -288,8 +288,8 @@ char *regNumberConverter(char *line){
     }
 	 newLine[newPos++] = line[pos++];
   }
-  void *realloc(newLine, newPos);
-  return newLine;
+  char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
+  return newNewLine;
 }
 //////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////PARSER/////////////////////////////////////////////////////
