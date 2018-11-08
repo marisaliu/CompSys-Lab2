@@ -135,7 +135,7 @@ char *regNumberConverter(char *line){
   	   //cases
 	   if(line[pos++] == 't'){ 
         if(isdigit(line[pos++])){		//check what second char is
-	       if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
+	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 		    if((line[pos-1]-'0')<8){
 				regNum = 8+(line[pos-1]-'0'); //register number in int
 				itoa(regNum, regChar, 10);    //convert to str
@@ -157,113 +157,113 @@ char *regNumberConverter(char *line){
 			   newLine[newPos++] = ' ';
 			 }
 		  }
-		  else{return 'e';} //error if not a number
+		  else{return "e";} //error if not a number
 	   }
 	   else if(line[pos++] == 's'){				//check for s0-7 or sp
         if(isdigit(line[pos++])){		//if second char is number
-	     	 if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
-		    if(atoi(line[pos-1])<8){
+	     	 if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
+		    if((line[pos-1]-'0')<8){
 	 		   regNum = 16+(line[pos-1]-'0'); //register number in int
 		  	   itoa(regNum, regChar, 10);    //convert to str
 			   newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = regChar[1];
 			   newLine[newPos++] = ' ';
 			 }
-			 else{return 'e';}
+			 else{return "e";}
 		  }
 		  else if(line[pos++] == 'p'){   //if sp
-	       if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
+	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 		    newLine[newPos++] = '2';
 			 newLine[newPos++] = '9';
 			 newLine[newPos++] = ' ';
 		  }
-		  else{return 'e';} //error if not a number
+		  else{return "e";} //error if not a number
 	   }
 	   else if(line[pos++] == 'a'){	//if a0-a3
         if(isdigit(line[pos++])){		
-	       if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char 
-			 if(atoi(line[pos-1])<4){
+	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char 
+			 if((line[pos-1]-'0')<4){
 	 		   regNum = 4+(line[pos-1]-'0'); //register number in int
 		      itoa(regNum, regChar, 10);    //convert to str
       	   newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = ' ';
 			 }
-			 else{return 'e';}
+			 else{return "e";}
 		  }
-		  else{return 'e';} //error if not a number
+		  else{return "e";} //error if not a number
   	   }
 	   else if(line[pos++] == 'v'){ //if v0-v1
         if(isdigit(line[pos++])){		
-	       if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
-			 if(atoi(line[pos-1])<2){
+	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
+			 if((line[pos-1]-'0')<2){
 	 		   regNum = 2+(line[pos-1]-'0'); //register number in int
 		      itoa(regNum, regChar, 10);    //convert to str
       	   newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = ' ';
 			 }
-			 else{return 'e';}
+			 else{return "e";}
 		  }
-		  else{return 'e';} //error if not a number
+		  else{return "e";} //error if not a number
 	   }
 	   else if(line[pos++] == 'k'){	//if k0-k1
         if(isdigit(line[pos++])){		
-	     	 if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
-		  	 if(atoi(line[pos-1])<2){
+	     	 if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
+		  	 if((line[pos-1]-'0')<2){
 	 		   regNum = 26+(line[pos-1]-'0'); //register number in int
 		      itoa(regNum, regChar, 10);    //convert to str
       	   newLine[newPos++] = regChar[0];
 			   newLine[newPos++] = regChar[1];
 				newLine[newPos++] = ' ';
 			 }
-			 else{return 'e';}
+			 else{return "e";}
 		  }
-		  else{return 'e';} //error if not a number
+		  else{return "e";} //error if not a number
 	   }
 	   //if doesnt begin with t, s, a, v, or k
 	   else if(line[pos++] == 'g'){ //check for gp
 	     if(line[pos++] == 'p'){
-	       if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
+	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
       	 newLine[newPos++] = '2';
 			 newLine[newPos++] = '8';
 			 newLine[newPos++] = ' ';
 		  }
-		  else{return 'e';}
+		  else{return "e";}
 	   }
       else if(line[pos++] == 'f'){ //check for fp
 	     if(line[pos++] == 'p'){
-	       if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
+	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 		    newLine[newPos++] = '3';
 			 newLine[newPos++] = '0';
 			 newLine[newPos++] = ' ';
 		  }
-		  else{return 'e';}
+		  else{return "e";}
 	   }
 	   else if(line[pos++] == 'r'){	//check for ra
 		  if(line[pos++] == 'a'){
-	       if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
+	       if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 		    newLine[newPos++] = '3';
 			 newLine[newPos++] = '1';
 			 newLine[newPos++] = ' ';
 		  }
-		  else{return 'e';}
+		  else{return "e";}
 	   }
 	   else if(line[pos++] == 'z'){	//check for zero
 		  if(line[pos++] == 'e'){
 		    if(line[pos++] == 'r'){
 			   if(line[pos++] == 'o'){
-	           if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
+	           if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
 			     newLine[newPos++] = '0';
 			     newLine[newPos++] = ' ';
 				}
-			   else{return 'e';}
+			   else{return "e";}
 		    }
-		    else{return 'e';}
+		    else{return "e";}
 		  }
-		  else{return 'e';}
+		  else{return "e";}
 	   }
 	   else if(isdigit(line[pos++])){	//check if 0-31
 		  if((line[pos++] == ' ') || (isdigit(line[pos]))){
-			 if((line[pos++] != ' ') || (line[pos] != '\0')){return 'e';} //check for no extra char
+			 if((line[pos++] != ' ') || (line[pos] != '\0')){return "e";} //check for no extra char
           if(isdigit(line[pos-1])){
 			   regNum = 10*(line[pos-2]-'0');
 			   regNum += (line[pos-1]-'0');
@@ -271,7 +271,7 @@ char *regNumberConverter(char *line){
 			 else{
             regNum = (line[pos-2]-'0');
 			 }
-			 if(regNum>31) return 'e'; //error if number is >31
+			 if(regNum>31) return "e"; //error if number is >31
 			 if(isdigit(line[pos-1])){
 			   newLine[newPos++] = line[pos-2];
 			   newLine[newPos++] = line[pos-1];
@@ -282,11 +282,11 @@ char *regNumberConverter(char *line){
 				newLine[newPos++] = ' ';
 			 }
 		  }
-		  else{return 'e';} 		//error if next digit is not empty or a number
+		  else{return "e";} 		//error if next digit is not empty or a number
 	   }
-	   else{return 'e';}			//return error if no matches
+	   else{return "e";}			//return error if no matches
     }
-	 newLine[newPos++] = line[pos++};
+	 newLine[newPos++] = line[pos++];
   }
   void *realloc(newLine, newPos);
   return newLine;
@@ -298,7 +298,7 @@ char *regNumberConverter(char *line){
 //////////////////////////////////////////////////////////////////////////////////////
 struct inst parser(char *line){
   inst *newInst;
-  /*parse by whitespace and create an array of strings/numbers
+/*  parse by whitespace and create an array of strings/numbers
    if(index 0 is ADD, SUB, MULT) --> contains opcode, rs, rt, rd, funct
 
 }
