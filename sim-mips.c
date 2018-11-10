@@ -120,7 +120,7 @@ char *regNumberConverter(char *line){
 //  takes in output of progScanner
 //  returns pointer to character string, which all register names are converted to numbers
   char *newLine = (char *)malloc(strlen(line)*sizeof(char));
-  char regChar[2];
+  char regChar[3];
   int regNum;
   int pos=0;
   int newPos=0;
@@ -140,10 +140,8 @@ char *regNumberConverter(char *line){
 			 if(!((line[pos+1] == ' ') || line[pos+1] == '\0')){return "1";} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
 			 if((line[pos]-'0')<8){
 				regNum = 8+(line[pos++]-'0'); //register number in int
-				//itoa(regNum, regChar, 10);    //convert to str
-				sprintf(regChar,"%d", regNum);
+				sprintf(regChar,"%d", regNum);//convert to str
 				if(regNum > 9){					//if regNum double digit
-				  printf("\n adding");
 				  newLine[newPos++] = regChar[0];
 				  newLine[newPos++] = regChar[1];
 				}
