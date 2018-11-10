@@ -137,7 +137,7 @@ char *regNumberConverter(char *line){
   	   //cases
 	   if(line[pos] == 't'){ 
 		  if(isdigit(line[++pos])){		//check what second char is
-			 if(!((line[pos+1] == ' ') || line[pos+1] == '\0')){return 1;} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
+			 if(!((line[pos+1] == ' ') || line[pos+1] == '\0')){return "1";} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
 			 if((line[pos]-'0')<8){
 				regNum = 8+(line[pos++]-'0'); //register number in int
 				//itoa(regNum, regChar, 10);    //convert to str
@@ -260,28 +260,24 @@ char *regNumberConverter(char *line){
 		  else{return "o";}
 	   }
 	   else if(isdigit(line[pos])){	//check if 0-31
-		  if((line[++pos] == ' ') || (isdigit(line[pos]))){
-			 if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "11";} //check for no extra char
-          if(isdigit(line[pos])){
+		if(isdigit(line[++pos])){
+		      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){ return "11";}
+		      else{
 			   regNum = 10*(line[pos-1]-'0');
 			   regNum += (line[pos]-'0');
-			 }
-			 else{
-            regNum = (line[pos-1]-'0');
-			 }
-			 if(regNum>31) return "p"; //error if number is >31
-			 if(isdigit(line[pos])){
+			   if(regNum > 31) return "p";
 			   newLine[newPos++] = line[pos-1];
-			   newLine[newPos++] = line[pos];
-		    }
-			 else{
-				newLine[newPos++] = line[pos-1];
-			 }
-		  }
-		  else{return "q";} 		//error if next digit is not empty or a number
+			   newLine[newPos++] = line[pos++];
+		      } 
+		}      
+		else if((line[pos] == ' ') || (line[pos] == '\0')) {
+            		regNum = (line[pos-1]-'0');
+			newLine[newPos++] = line[pos-1];
+		}
+                else{ return "q";}
 	   }
-	   else{return "r";}			//return error if no matches
-    }
+	   else{return "r";}			//return error if no matches  
+    }  
 	 newLine[newPos++] = line[pos];
     printf("\nnewLine: %s", newLine);
   }
@@ -397,7 +393,7 @@ void WB()
 	//start your code from here
 }*/
   void main(void){
-  char *strin = "add $zero $s1 $t2";
+  char *strin = "add $zero $11 $15";
   char *strout;
   strout = regNumberConverter(strin);
   printf("\n%s", strout);
