@@ -201,9 +201,8 @@ char *regNumberConverter(char *line){
 	   else if(line[pos] == 'v'){ //if v0-v1
         if(isdigit(line[++pos])){		
 	       if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "5";} //check for no extra char
-			 if((line[pos-1]-'0')<2){
+			 if((line[pos]-'0')<2){
 	 		   regNum = 2+(line[pos++]-'0'); //register number in int
-		      //itoa(regNum, regChar, 10);    //convert to str
       	 	sprintf(regChar,"%d", regNum);
 				newLine[newPos++] = regChar[0];
 			 }
@@ -401,7 +400,7 @@ void WB()
 	//start your code from here
 }*/
   void main(void){
-  char *strin = "add $gp $sp $fp $ra $ra";
+  char *strin = "add $v0 $v1 $ra $ra";
   char *strout;
   strout = regNumberConverter(strin);
   printf("\n%s", strout);
