@@ -173,7 +173,7 @@ char *regNumberConverter(char *line){
 			 }
 			 else{return "b";}
 		  }
-		  else if(line[pos] == 'p'){   //if sp
+		  else if(line[pos++] == 'p'){   //if sp
 	       if(!((line[pos] == ' ') || (line[pos++] == '\0'))){return "3";} //check for no extra char
 		    newLine[newPos++] = '2';
 			 newLine[newPos++] = '9';
@@ -229,7 +229,8 @@ char *regNumberConverter(char *line){
 	   else if(line[pos] == 'g'){ //check for gp
 	     if(line[++pos] == 'p'){
 	       if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "7";} //check for no extra char
-      	 newLine[newPos++] = '2';
+      	 pos++;
+			 newLine[newPos++] = '2';
 			 newLine[newPos++] = '8';
 		  }
 		  else{return "j";}
@@ -237,7 +238,8 @@ char *regNumberConverter(char *line){
       else if(line[pos] == 'f'){ //check for fp
 	     if(line[++pos] == 'p'){
 	       if(!(line[pos+1] == ' ') || (line[pos++ +1] == '\0')){return "8";} //check for no extra char
-		    newLine[newPos++] = '3';
+		    pos++;
+			 newLine[newPos++] = '3';
 			 newLine[newPos++] = '0';
 		  }
 		  else{return "k";}
@@ -245,7 +247,8 @@ char *regNumberConverter(char *line){
 	   else if(line[pos] == 'r'){	//check for ra
 		  if(line[++pos] == 'a'){
 	       if(((line[pos+1] != ' ') || (line[pos++ +1] == '\0'))){return "9";} //check for no extra char
-		    newLine[newPos++] = '3';
+		    pos++;
+			 newLine[newPos++] = '3';
 			 newLine[newPos++] = '1';
 		  }
 		  else{return "l";}
@@ -398,7 +401,7 @@ void WB()
 	//start your code from here
 }*/
   void main(void){
-  char *strin = "add $zero $at $at";
+  char *strin = "add $gp $sp $fp $ra $ra";
   char *strout;
   strout = regNumberConverter(strin);
   printf("\n%s", strout);
