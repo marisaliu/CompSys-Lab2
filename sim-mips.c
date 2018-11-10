@@ -87,12 +87,11 @@ struct inst{
 */ 
 char *regNumberConverter(char *line){
   char *newLine = (char *)malloc(strlen(line)*sizeof(char));
-  char regChar[2];
+  char regChar[3];
   int regNum;
   int pos=0;
   int newPos=0;
   for(pos=0; pos<strlen(line); pos++){
-    printf("\nline: %s", line);
     if(line[pos] == '$'){ //do nothing until hit a $
       pos++;
 	//check if z, a, v, t, k, g, s, p, r
@@ -104,7 +103,6 @@ char *regNumberConverter(char *line){
 	      regNum = 8+(line[pos++]-'0'); //register number in int
 	      sprintf(regChar,"%d", regNum);
 	      if(regNum > 9){					//if regNum double digit
-	        printf("\n adding");
 	        newLine[newPos++] = regChar[0];
 	        newLine[newPos++] = regChar[1];
 	      }
@@ -354,9 +352,4 @@ void WB()
 	
 	//start your code from here
 }*/
-  void main(void){
-  char *strin = "add $t0 $t1 $t2 $t3 $t4 $t5 $t6 $t7 $ra $ra";
-  char *strout;
-  strout = regNumberConverter(strin);
-  printf("\n%s", strout);
-  }
+  
