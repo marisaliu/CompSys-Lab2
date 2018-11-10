@@ -236,7 +236,7 @@ char *regNumberConverter(char *line){
 	   }
       else if(line[pos] == 'f'){ //check for fp
 	     if(line[++pos] == 'p'){
-	       if(!(line[pos+1] == ' ') || (line[pos++ +1] == '\0')){return "8";} //check for no extra char
+	       if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "8";} //check for no extra char
 		    pos++;
 			 newLine[newPos++] = '3';
 			 newLine[newPos++] = '0';
@@ -245,7 +245,7 @@ char *regNumberConverter(char *line){
 	   }
 	   else if(line[pos] == 'r'){	//check for ra
 		  if(line[++pos] == 'a'){
-	       if(((line[pos+1] != ' ') || (line[pos++ +1] == '\0'))){return "9";} //check for no extra char
+	       if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "9";} //check for no extra char
 		    pos++;
 			 newLine[newPos++] = '3';
 			 newLine[newPos++] = '1';
@@ -400,7 +400,7 @@ void WB()
 	//start your code from here
 }*/
   void main(void){
-  char *strin = "add $v0 $v1 $ra $ra";
+  char *strin = "add $t0 $t1 $t2 $t3 $t4 $t5 $t6 $t7 $ra $ra";
   char *strout;
   strout = regNumberConverter(strin);
   printf("\n%s", strout);
