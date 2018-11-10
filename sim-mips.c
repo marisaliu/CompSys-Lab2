@@ -181,17 +181,22 @@ char *regNumberConverter(char *line){
 		  else{return "c";} //error if not a number
 	   }
 	   else if(line[pos] == 'a'){	//if a0-a3
-        if(isdigit(line[++pos])){		
+             if(isdigit(line[++pos])){		
 	       if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "4";} //check for no extra char 
-			 if((line[pos]-'0')<4){
-	 		   regNum = 4+(line[pos++]-'0'); //register number in int
+		 if((line[pos]-'0')<4){
+	 	   regNum = 4+(line[pos++]-'0'); //register number in int
 		      //itoa(regNum, regChar, 10);    //convert to str
       	   sprintf(regChar,"%d", regNum);
 				newLine[newPos++] = regChar[0];
 			 }
 			 else{return "d";}
-		  }
-		  else{return "e";} //error if not a number
+		}
+	      else if(line[pos] == 't'){
+		if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))) {return "17";}
+		pos++;
+		newLine[newPos++] = '1';
+	      }
+	      else{return "e";} //error if not a number
   	   }
 	   else if(line[pos] == 'v'){ //if v0-v1
         if(isdigit(line[++pos])){		
@@ -393,7 +398,7 @@ void WB()
 	//start your code from here
 }*/
   void main(void){
-  char *strin = "add $zero $11 $15";
+  char *strin = "add $zero $at $at";
   char *strout;
   strout = regNumberConverter(strin);
   printf("\n%s", strout);
