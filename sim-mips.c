@@ -437,35 +437,6 @@ void IF(int currentInstrAddress){
 
 }
 
-void main(int argc, char *argv[])        //take in memory acces time cycles, multiply time cycles, all other EX operation cycles, filename 
-{
-assert(argc = 5);
-
-int memaccesscycle = atoi(argv[1]);              //these were on the ppt but im not sure exactly what these are
-int multiplytimecycle = atoi(argv[2]);
-int exoperationcycle = atoi(argv[3]);
-char filename = atoi(argv[4]);
-
-
-int clockcount=0;                    //clock counter that represents the passage of time  
-//char *filename;                 //name of file to read
-FILE *fp;
-//fp = fopen(filename, "r");
-//char *currentLine;
-
-int *instructionMemory;
-instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
-int instructionAddress=0;
-
-int *dataMemory;
-dataMemory = (int *)malloc(500 * sizeof(int));
-int dataAddress=0;
-
-
-
-
-}
-
 
 /*
 void ID()
@@ -477,12 +448,10 @@ void WB()
  stages themselves are not pipelined
    eg. if an add takes 4 cycles, next instruction cannot enter EX until cycles have elapsed
 
-
-
  */
 
 
-/*main (int argc, char *argv[]){
+void main (int argc, char *argv[]){
 	int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
 	int c,m,n;
 	int i;//for loop counter
@@ -541,6 +510,15 @@ void WB()
 	}
 	
 	//start your code from here
-}*/
+	int *instructionMemory;
+	instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
+	int instructionAddress=0;
+
+	int *dataMemory;
+	dataMemory = (int *)malloc(500 * sizeof(int));
+	int dataAddress=0;
+
+
+}
   
 
