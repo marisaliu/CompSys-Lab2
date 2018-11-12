@@ -15,12 +15,30 @@
 #define BATCH 0
 #define REG_NUM 32
 
-/*all assembly language in lowercase, dont worry about upper
-everything is in offsets
-**offsets(in terms of words) are in relation to the next line of where they are called
+ ///////////////////////////////////////////////////////////////////////
+ /////////////////////GLOBAL VARIABLES//////////////////////////////////
+ ///////////////////////////////////////////////////////////////////////
+  struct inst IFIDLatch;
+  struct inst IDEXLatch;
+  struct inst EXMEMLatch;
+  struct inst MEMWBLatch;
+  struct inst *IMem; 
+  int pc;
+  int branchUnresolved;
+  int timer;
+  int IFcount;
+  int IDcount;
+  int Excount;
+  int MEMcount;
+  int WBcount; 
+  int halt;
+  int mode; 
 
-read through fgets
-instructions limited to 100 characters
+  
+  
+  
+  /*
+**offsets(in terms of words) are in relation to the next line of where they are called
 
 2 modes
   single cycle mode
@@ -35,20 +53,23 @@ instructions limited to 100 characters
 */
 //code should include:
 
+
+
+////////////////////////////////////////////////////////////////////////////
+/////////////////////////PROGSCANNER////////////////////////////////////////
+//Input a string and get rid of any extra punction, spaces or parentheses///
+////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
-///////remove punctuation first
-char copy[strlen(currentLine)];   //make empty array of size currentLine
-int i;
-int pos=0;
-for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
-	if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
-	copy[pos] = currentLine[i];
-	pos++;
-	}
-}
-
-strcpy(currentLine, copy);     //copy end result to currentLine
-
+  char copy[strlen(currentLine)];   //make empty array of size currentLine
+  int i;
+  int pos=0;
+  for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
+    if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
+    copy[pos] = currentLine[i];
+    pos++;
+    }
+  }
+  strcpy(currentLine, copy);     //copy end result to currentLine
 ///////////remove and leave only 1 space
   char *from , *to;
   int space=0;
@@ -66,6 +87,7 @@ strcpy(currentLine, copy);     //copy end result to currentLine
   return currentLine;
 }
 
+
 ////////////Enumeration type describing opcodes////////////
 //enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
 
@@ -73,15 +95,19 @@ strcpy(currentLine, copy);     //copy end result to currentLine
 ///Structure that holds data about the type of instruction 
 struct inst
 {
-  char* opcode;
+  int opcode;
   int rs;
   int rt;
   int rd;
   int Imm;
 
 };
-/////////////////////////////////////////////
- 
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////REGNUMBERCONVERTER//////////////////////////////////////
+//Takes in input from progScanner() output and converts any registers that//
+//start with $ to numbers and returns error if invalid register/////////////
+///////////////////////////////////////////////////////////////////////////
 char *regNumberConverter(char *line){
   char *newLine = (char *)malloc(strlen(line)*sizeof(char));
   char regChar[3];
@@ -411,7 +437,15 @@ struct inst parser(char *line){
 
 
 void IF(int currentInstrAddress){
-//fetch from instruction memory
+  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
+    IFIDLatch = IMEM;   /////Need to configure pipeline
+    if(IFIDLatch.op == 7){
+      branchUnresolved = 1;
+    }
+    pc += 4;
+    IFcount++;
+  
+  //fetch from instruction memory
 //freeze if unresolved branch
 //if branch, finish branch first before continuing
 
@@ -500,7 +534,13 @@ void main (int argc, char *argv[]){
 
   traceEntry1 = malloc(200*sizeof(char));
   ifp = fopen("./program.txt", "r");
-/*
+
+ 
+  
+  
+  
+  
+  /*
   while(tracEntry1 != "haltSimulation"){
     fgets(traceEntry1, 100, ifp);
     printf("String input is %s \n", traceEntry1);
