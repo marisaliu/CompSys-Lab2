@@ -15,12 +15,30 @@
 #define BATCH 0
 #define REG_NUM 32
 
-/*all assembly language in lowercase, dont worry about upper
-everything is in offsets
-**offsets(in terms of words) are in relation to the next line of where they are called
+ ///////////////////////////////////////////////////////////////////////
+ /////////////////////GLOBAL VARIABLES//////////////////////////////////
+ ///////////////////////////////////////////////////////////////////////
+  struct inst IFIDLatch;
+  struct inst IDEXLatch;
+  struct inst EXMEMLatch;
+  struct inst MEMWBLatch;
+  struct inst *instMem; 
+  int pc;
+  int branchUnresolved;
+  int timer;
+  int IFcount;
+  int IDcount;
+  int Excount;
+  int MEMcount;
+  int WBcount; 
+  int halt;
+  int mode; 
 
-read through fgets
-instructions limited to 100 characters
+  
+  
+  
+  /*
+**offsets(in terms of words) are in relation to the next line of where they are called
 
 2 modes
   single cycle mode
@@ -35,20 +53,23 @@ instructions limited to 100 characters
 */
 //code should include:
 
+
+
+////////////////////////////////////////////////////////////////////////////
+/////////////////////////PROGSCANNER////////////////////////////////////////
+//Input a string and get rid of any extra punction, spaces or parentheses///
+////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
-///////remove punctuation first
-char copy[strlen(currentLine)];   //make empty array of size currentLine
-int i;
-int pos=0;
-for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
-	if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
-	copy[pos] = currentLine[i];
-	pos++;
-	}
-}
-
-strcpy(currentLine, copy);     //copy end result to currentLine
-
+  char copy[strlen(currentLine)];   //make empty array of size currentLine
+  int i;
+  int pos=0;
+  for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
+    if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
+    copy[pos] = currentLine[i];
+    pos++;
+    }
+  }
+  strcpy(currentLine, copy);     //copy end result to currentLine
 ///////////remove and leave only 1 space
   char *from , *to;
   int space=0;
@@ -66,6 +87,7 @@ strcpy(currentLine, copy);     //copy end result to currentLine
   return currentLine;
 }
 
+
 ////////////Enumeration type describing opcodes////////////
 //enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
 
@@ -80,8 +102,12 @@ struct inst
   int Imm;
 
 };
-/////////////////////////////////////////////
- 
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////REGNUMBERCONVERTER//////////////////////////////////////
+//Takes in input from progScanner() output and converts any registers that//
+//start with $ to numbers and returns error if invalid register/////////////
+///////////////////////////////////////////////////////////////////////////
 char *regNumberConverter(char *line){
   char *newLine = (char *)malloc(strlen(line)*sizeof(char));
   char regChar[3];
@@ -441,33 +467,23 @@ printf("Imm: %d\n", newInst->Imm);
 
 }
 
- 
- /*take in file
- parse line by line
- should be able to take in names and numbers - eg. zero and 0
- remove duplicate commas, spaces, parenthesises, etc.
- keep reading until halt simulation*/
- // takes in output of progScanner
-  //returns pointer to character string, which all register names are converted to numbers
-/*
-struct inst parser()
-  uses output of regNumberConverter()
-  returns instruction as inst struct with fields for each of the fields of MIPS instructions
-    eg. opcode, rs, rt, rd, Imm.
-	 not all fields will be used for each line
-  if illegal opcode, error in simulation and stops
 
-*/
-
-
-void IF(int currentInstrAddress){
-//fetch from instruction memory
+/*void IF(int currentInstrAddress){
+  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
+    IFIDLatch = instMem;   /////Need to configure pipeline
+    if(IFIDLatch.op == 7){
+      branchUnresolved = 1;
+    }
+    pc += 4;
+    IFcount++;
+  
+  //fetch from instruction memory
 //freeze if unresolved branch
 //if branch, finish branch first before continuing
 
 
 }
-
+*/
 
 /*
 void ID()
@@ -485,73 +501,108 @@ void WB()
 void main (int argc, char *argv[]){
 //char test[] = "lwe 5 7 4";
 //parser(test);
-  	int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
-	int c,m,n;
-	int i;//for loop counter
-	long mips_reg[REG_NUM];
-	long pgm_c=0;//program counter
-	long sim_cycle=0;//simulation cycle counter
-	//define your own counter for the usage of each pipeline stage here
+  int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
+  int c,m,n;
+  int i;//for loop counter
+  long mips_reg[REG_NUM];
+  long pgm_c=0;//program counter
+  long sim_cycle=0;//simulation cycle counter
+  //define your own counter for the usage of each pipeline stage here
 	
-	int test_counter=0;
-	FILE *input=NULL;
-	FILE *output=NULL;
-	printf("The arguments are:");
-	
-	for(i=1;i<argc;i++){
-		printf("%s ",argv[i]);
-	}
-	printf("\n");
-	if(argc==7){
-		if(strcmp("-s",argv[1])==0){
-			sim_mode=SINGLE;
-		}
-		else if(strcmp("-b",argv[1])==0){
-			sim_mode=BATCH;
-		}
-		else{
-			printf("Wrong sim mode chosen\n");
-			exit(0);
-		}
+  int test_counter=0;
+  FILE *input=NULL;
+  FILE *output=NULL;
+  printf("The arguments are:");
+  for(i=1;i<argc;i++){
+    printf("%s ",argv[i]);
+  }
+  printf("\n");
+  if(argc==7){
+    if(strcmp("-s",argv[1])==0){
+      sim_mode=SINGLE;
+    }
+    else if(strcmp("-b",argv[1])==0){
+      sim_mode=BATCH;
+    }
+    else{
+      printf("Wrong sim mode chosen\n");
+      exit(0);
+    }	
+    m=atoi(argv[2]);
+    n=atoi(argv[3]);
+    c=atoi(argv[4]);
+    input=fopen(argv[5],"r");
+    output=fopen(argv[6],"w");
 		
-		m=atoi(argv[2]);
-		n=atoi(argv[3]);
-		c=atoi(argv[4]);
-		input=fopen(argv[5],"r");
-		output=fopen(argv[6],"w");
-		
-	}
-	
-	else{
-		printf("Usage: ./sim-mips -s m n c input_name output_name (single-sysle mode)\n or \n ./sim-mips -b m n c input_name  output_name(batch mode)\n");
-		printf("m,n,c stand for number of cycles needed by multiplication, other operation, and memory access, respectively\n");
-		exit(0);
-	}
-	if(input==NULL){
-		printf("Unable to open input or output file\n");
-		exit(0);
-	}
-	if(output==NULL){
-		printf("Cannot create output file\n");
-		exit(0);
-	}
+  }
+  else{
+    printf("Usage: ./sim-mips -s m n c input_name output_name (single-sysle mode)\n or \n ./sim-mips -b m n c input_name  output_name(batch mode)\n");
+    printf("m,n,c stand for number of cycles needed by multiplication, other operation, and memory access, respectively\n");
+    exit(0);
+  }
+  if(input==NULL){
+    printf("Unable to open input or output file\n");
+    exit(0);
+  }
+  if(output==NULL){
+    printf("Cannot create output file\n");
+    exit(0);
+  }
 	//initialize registers and program counter
-	if(sim_mode==1){
-		for (i=0;i<REG_NUM;i++){
-			mips_reg[i]=0;
-		}
-	}
-	
+  if(sim_mode==1){
+    for (i=0;i<REG_NUM;i++){
+      mips_reg[i]=0;
+    }
+  }
+
 	//start your code from here
-	int *instructionMemory;
-	instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
-	int instructionAddress=0;
+  int *instructionMemory;
+  instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
+  int instructionAddress=0;
+  int *dataMemory;
+  dataMemory = (int *)malloc(500 * sizeof(int));
+  int dataAddress=0;
 
-	int *dataMemory;
-	dataMemory = (int *)malloc(500 * sizeof(int));
-	int dataAddress=0;
+  char *traceEntry1;
+  FILE *ifp;
+
+  traceEntry1 = malloc(200*sizeof(char));
+  ifp = fopen("./program.txt", "r");
+
+ 
+  
+  
+  
+  
+  /*
+  while(tracEntry1 != "haltSimulation"){
+    fgets(traceEntry1, 100, ifp);
+    printf("String input is %s \n", traceEntry1);
+  }
+  fclose(ifp);
 
 
+
+
+
+  //output statistics in batch mode
+  if(sim_mode==0){
+    fprintf(output,"program name: %s\n",argv[5]);
+    fprintf(output,"stage utilization: %f  %f  %f  %f  %f \n", ifUtil, idUtil, exUtil, memUtil, wbUtil);
+    // add the (double) stage_counter/sim_cycle for each 
+    // stage following sequence IF ID EX MEM WB		
+    fprintf(output,"register values ");
+    for (i=1;i<REG_NUM;i++){
+      fprintf(output,"%d  ",mips_reg[i]);
+    }
+    fprintf(output,"%d\n",pgm_c);
+  }
+   
+  //close input and output files at the end of the simulation
+//	fclose(input);
+//	fclose(output);
+	return 0;
+*/
 }
   
 
