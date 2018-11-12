@@ -508,7 +508,7 @@ void main (int argc, char *argv[]){
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
   //define your own counter for the usage of each pipeline stage here
-	
+  instMem = malloc((2048/4)*sizeof(struct inst));
   int test_counter=0;
   FILE *input=NULL;
   FILE *output=NULL;
