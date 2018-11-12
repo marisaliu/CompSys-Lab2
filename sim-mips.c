@@ -568,7 +568,6 @@ void main (int argc, char *argv[]){
 
   traceEntry1 = malloc(200*sizeof(char));
   ifp = fopen("./program.txt", "r");
-
  
   
   
