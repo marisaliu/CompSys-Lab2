@@ -66,9 +66,12 @@ char *progScanner(char* currentLine){
   for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
     if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
     copy[pos] = currentLine[i];
+    }
+    else
+      copy[pos] = ' ';
     pos++;
     }
-  }
+  
   strcpy(currentLine, copy);     //copy end result to currentLine
 ///////////remove and leave only 1 space
   char *from , *to;
@@ -84,6 +87,7 @@ char *progScanner(char* currentLine){
       if(!to[-1])break;
     }
   } 
+  printf("%s\n", currentLine);
   return currentLine;
 }
 
@@ -134,7 +138,7 @@ char *regNumberConverter(char *line){
 	      }
 	    }
 	    else{
-	      regNum = 16+(line[pos-1]-'0'); //register number in int
+	      regNum = 16+(line[pos++]-'0'); //register number in int
 	      sprintf(regChar,"%d", regNum);
 	      newLine[newPos++] = regChar[0];
 	      newLine[newPos++] = regChar[1];
@@ -265,6 +269,7 @@ char *regNumberConverter(char *line){
     }
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
+    printf("%s\n", newNewLine);
     return newNewLine;
 
 }
@@ -320,7 +325,7 @@ while (p != NULL){            //loop through until done
 	arg[0]=3;
     }
     else if(strcmp(p, "lw")==0){            //lw is 4
-	arg[0]=4;
+      arg[0]=4;
     }
    else if(strcmp(p, "sw")==0){                //sw is 5
 	arg[0]=5;
@@ -367,7 +372,7 @@ while (p != NULL){            //loop through until done
     
    //////////////actually check which instructions it is and put the arguments in the right variables in the inst
    //if(index 0 is ADD, SUB, MUL) --> contains opcode, rs, rt, rd, funct (r)
-
+//printf("%d",arg[0]);
   if((arg[0]==1) || (arg[0]==2) || (arg[0])==3){      //if opcode is "add" or "sub" or "mul", respectively
   int i;
     for(i=1;i < 4; i++)
@@ -441,22 +446,23 @@ while (p != NULL){            //loop through until done
 	Error_ImmediateField();                                //return immediate field too big
     }
 
-    if((arg[0]==7) && ((arg[3]%4)==0)){
-	if(arg[3] < 65535){
+    if(arg[0]==7){                                     //if it's beq also check memory misalignment
+     if((arg[3]%4)==0){	
+      if(arg[3] < 65535){
 		newInst->Imm = arg[3];
 	}
 	else{
 		Error_ImmediateField();                //return too large immediate field
 	}
-
-    }
-    else{
-	Error_MemoryMisalignment();           // return memory misalignment error
+     }
+     else{
+	Error_MemoryMisalignment();
+     }
     }
  
   }
   else{
-	Error_IllegalOpcode();              //return illegal opcode error because it's not any of the valid ones
+    Error_IllegalOpcode();              //return illegal opcode error because it's not any of the valid ones
   }
   //*/
 printf("Opcode: %d\n", newInst->opcode);
@@ -499,9 +505,12 @@ void WB()
 
 
 void main (int argc, char *argv[]){
-//char test[] = "lwe 5 7 4";
-//parser(test);
-  int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
+char test[] = "beq $ra $8 8";
+parser(regNumberConverter(progScanner(test)));
+//regNumberConverter(progScanner(test));
+//progScanner(test);
+
+/*  int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
   int c,m,n;
   int i;//for loop counter
   long mips_reg[REG_NUM];
@@ -572,7 +581,7 @@ void main (int argc, char *argv[]){
   
   
   
-  
+  */
   /*
   while(tracEntry1 != "haltSimulation"){
     fgets(traceEntry1, 100, ifp);
