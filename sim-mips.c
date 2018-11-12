@@ -5,10 +5,15 @@
 /////////////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
+#include <string.h>
+#include <math.h>
 #include <assert.h>
+#include <ctype.h>
+//feel free to add here any additional library names you may need 
+#define SINGLE 1
+#define BATCH 0
+#define REG_NUM 32
 
 /*all assembly language in lowercase, dont worry about upper
 everything is in offsets
@@ -73,40 +78,168 @@ struct inst
   int rt;
   int rd;
   int Imm;
+
 };
-///////////////////////////////////////////// 
-char *regNumberConverter(){
-   /*goes through line until reaches $ 
-    * take the string to the right of the $ until whitespace
-    *if(t s a v k)
-        if second letter is number
-	  if no third letter convert register to appropriate number
-	    if(first letter is t)
-	       if(second letter is 0 - 7) reg = 8 + second letter
-	       else reg = 16 + second letter
-	    elseif(first letter is v) 
-	       if(second letter is 0 or 1) reg = 2 + second letter
-	       else report error
-	    elseif(first letter is a)
-	      if(second letter is 0-3) reg = 4 + second letter
-	      else report error
-	    elseif(first letter is s)
-	      if(second letter is 0 - 7) reg = 16 + second letter
-	      else report error
-	    else
-	      if(second letter is 0 or 1) reg = 26 + second letter
-	      else report error
-	  else report error
-	else if(string is at) convert to 1
-	else if(string is sp) convert to 29
-	else report error
-     else if(gp) convert to 28
-     else if(fp) convert to 30
-     else if(ra) convert to 31
-     else if(zero) convert to 0
-     else if(0 - 31) delete $ from before 
-     else return error
-    * */
+/////////////////////////////////////////////
+ 
+char *regNumberConverter(char *line){
+  char *newLine = (char *)malloc(strlen(line)*sizeof(char));
+  char regChar[3];
+  int regNum;
+  int pos=0;
+  int newPos=0;
+  for(pos=0; pos<strlen(line); pos++){
+    if(line[pos] == '$'){ //do nothing until hit a $
+      pos++;
+	//check if z, a, v, t, k, g, s, p, r
+       //cases
+        if(line[pos] == 't'){ 
+          if(isdigit(line[++pos])){		//check what second char is
+	    if(!((line[pos+1] == ' ') || line[pos+1] == '\0')){return "1";} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
+	    if((line[pos]-'0')<8){
+	      regNum = 8+(line[pos++]-'0'); //register number in int
+	      sprintf(regChar,"%d", regNum);
+	      if(regNum > 9){					//if regNum double digit
+	        newLine[newPos++] = regChar[0];
+	        newLine[newPos++] = regChar[1];
+	      }
+	      else{
+	        newLine[newPos++] = regChar[0];	//if single digi
+	      }
+	    }
+	    else{
+	      regNum = 16+(line[pos-1]-'0'); //register number in int
+	      sprintf(regChar,"%d", regNum);
+	      newLine[newPos++] = regChar[0];
+	      newLine[newPos++] = regChar[1];
+	    }
+	  }
+	  else{return "a";} //error if not a number
+	}
+	else if(line[pos] == 's'){				//check for s0-7 or sp
+          if(isdigit(line[++pos])){		//if second char is number
+	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "2";} //check for no extra char
+	    if((line[pos]-'0')<8){
+	      regNum = 16+(line[pos++]-'0'); //register number in int
+	      sprintf(regChar,"%d", regNum);	
+	      newLine[newPos++] = regChar[0];
+	      newLine[newPos++] = regChar[1];
+	    }
+	    else{return "b";}
+	  }
+	  else if(line[pos++] == 'p'){   //if sp
+	    if(!((line[pos] == ' ') || (line[pos++] == '\0'))){return "3";} //check for no extra char
+	    newLine[newPos++] = '2';
+	    newLine[newPos++] = '9';
+		  }
+	    else{return "c";} //error if not a number
+	   }
+	  else if(line[pos] == 'a'){	//if a0-a3
+            if(isdigit(line[++pos])){		
+	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "4";} //check for no extra char 
+	      if((line[pos]-'0')<4){
+	        regNum = 4+(line[pos++]-'0'); //register number in int
+	        sprintf(regChar,"%d", regNum);
+		newLine[newPos++] = regChar[0];
+	      }
+	      else{return "d";}
+	    }
+	    else if(line[pos] == 't'){
+	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))) {return "17";}
+	      pos++;
+	      newLine[newPos++] = '1';
+	    }
+	    else{return "e";} //error if not a number
+  	 }
+	 else if(line[pos] == 'v'){ //if v0-v1
+           if(isdigit(line[++pos])){		
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "5";} //check for no extra char
+	     if((line[pos]-'0')<2){
+	       regNum = 2+(line[pos++]-'0'); //register number in int
+      	       sprintf(regChar,"%d", regNum);
+	       newLine[newPos++] = regChar[0];
+	     }
+	     else{return "f";}
+	   }
+	   else{return "g";} //error if not a number
+	 }
+	 else if(line[pos] == 'k'){	//if k0-k1
+           if(isdigit(line[++pos])){		
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "6";} //check for no extra char
+	     if((line[pos]-'0')<2){
+	       regNum = 26+(line[pos++]-'0'); //register number in int
+	       sprintf(regChar,"%d", regNum);
+	       newLine[newPos++] = regChar[0];
+	       newLine[newPos++] = regChar[1];
+	     }
+	     else{return "h";}
+	   }
+	   else{return "i";} //error if not a number
+	 }
+	   //if doesnt begin with t, s, a, v, or k
+	 else if(line[pos] == 'g'){ //check for gp
+	  if(line[++pos] == 'p'){
+	    if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "7";} //check for no extra char
+      	    pos++;
+	    newLine[newPos++] = '2';
+	    newLine[newPos++] = '8';
+	  }
+	  else{return "j";}
+	 }
+         else if(line[pos] == 'f'){ //check for fp
+	   if(line[++pos] == 'p'){
+	     if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "8";} //check for no extra char
+	     pos++;
+	     newLine[newPos++] = '3';
+	     newLine[newPos++] = '0';
+	   }
+	   else{return "k";}
+	 }
+	 else if(line[pos] == 'r'){	//check for ra
+	   if(line[++pos] == 'a'){
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "9";} //check for no extra char
+	     pos++;
+	     newLine[newPos++] = '3';
+	     newLine[newPos++] = '1';
+	   }
+	   else{return "l";}
+	 }
+	 else if(line[pos] == 'z'){	//check for zero
+	   if(line[++pos] == 'e'){
+	     if(line[++pos] == 'r'){
+	       if(line[++pos] == 'o'){
+	         if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "10";} //check for no extra char
+	         pos++; 
+	         newLine[newPos++] = '0';
+	       }
+	       else{return "m";}
+	     }
+	     else{return "n";}
+	   }
+	   else{return "o";}
+	 }
+	 else if(isdigit(line[pos])){	//check if 0-31
+	   if(isdigit(line[++pos])){
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){ return "11";}
+	     regNum = 10*(line[pos-1]-'0');
+	     regNum += (line[pos]-'0');
+	       if(regNum > 31) return "p";
+	       newLine[newPos++] = line[pos-1];
+	       newLine[newPos++] = line[pos++];
+	     }      
+	   else if((line[pos] == ' ') || (line[pos] == '\0')) {
+             regNum = (line[pos-1]-'0');
+	     newLine[newPos++] = line[pos-1];
+	   }
+           else{ return "q";}
+	 }
+	 else{return "r";}			//return error if no matches  
+      }  
+      newLine[newPos++] = line[pos];
+    }
+  
+    char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
+    return newNewLine;
 
 }
 
@@ -136,15 +269,18 @@ exit(1);
 
 //////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////PARSER/////////////////////////////////////////////////////
-//////Parameter --> output of regNumberConvereter()///////////////////////////////////
+//////Parameter --> output of regNumberConverter()///////////////////////////////////
 //////Return --> inst struct with fields for each of the files of MIPS instructions///
 //////////////////////////////////////////////////////////////////////////////////////
+
 struct inst parser(char *line){
   struct inst *newInst;
   char *p;                //store each section after parse
   char *instrname;         //name of instruction
   int arg[3];             //integer array of argument values
   int c=0, a=0;               //counters
+  
+  //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
   while (p != NULL){            //loop through until done
     if(c==0){                       //if first arg, put it into instrname
@@ -180,9 +316,10 @@ struct inst parser(char *line){
     p = strtok (line, " ");          //get next section
     c++;         
   }
-
-  //parse by whitespace and create an array of strings/numbers
+    
+   //////////////actually check which instructions it is and put the arguments in the right variables in the inst
    //if(index 0 is ADD, SUB, MUL) --> contains opcode, rs, rt, rd, funct (r)
+
   if((strcmp(instrname, "add")==0) || (strcmp(instrname, "sub")==0) || (strcmp(instrname, "mul")==0)){      //if opcode is "add" or "sub" or "mul"
   int i;
     for(i=0;i < 3; i++)
@@ -195,7 +332,6 @@ struct inst parser(char *line){
 	  }
 	  else{
 		Error_InvalidRegister();            //throw invalid register error
-		break;
 	  }
     }
 
@@ -274,15 +410,12 @@ struct inst parser(char *line){
 
 }
 
-
-
-/*char *regNumberConverterZ(char *l){
-int pos=0;
-while(l[pos] != '\0'){
-
-}
-
-}*/
+ 
+ /*take in file
+ parse line by line
+ should be able to take in names and numbers - eg. zero and 0
+ remove duplicate commas, spaces, parenthesises, etc.
+ keep reading until halt simulation*/
  // takes in output of progScanner
   //returns pointer to character string, which all register names are converted to numbers
 /*
@@ -292,6 +425,7 @@ struct inst parser()
     eg. opcode, rs, rt, rd, Imm.
 	 not all fields will be used for each line
   if illegal opcode, error in simulation and stops
+
 */
 
 
@@ -348,17 +482,65 @@ void WB()
  */
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*main (int argc, char *argv[]){
+	int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
+	int c,m,n;
+	int i;//for loop counter
+	long mips_reg[REG_NUM];
+	long pgm_c=0;//program counter
+	long sim_cycle=0;//simulation cycle counter
+	//define your own counter for the usage of each pipeline stage here
+	
+	int test_counter=0;
+	FILE *input=NULL;
+	FILE *output=NULL;
+	printf("The arguments are:");
+	
+	for(i=1;i<argc;i++){
+		printf("%s ",argv[i]);
+	}
+	printf("\n");
+	if(argc==7){
+		if(strcmp("-s",argv[1])==0){
+			sim_mode=SINGLE;
+		}
+		else if(strcmp("-b",argv[1])==0){
+			sim_mode=BATCH;
+		}
+		else{
+			printf("Wrong sim mode chosen\n");
+			exit(0);
+		}
+		
+		m=atoi(argv[2]);
+		n=atoi(argv[3]);
+		c=atoi(argv[4]);
+		input=fopen(argv[5],"r");
+		output=fopen(argv[6],"w");
+		
+	}
+	
+	else{
+		printf("Usage: ./sim-mips -s m n c input_name output_name (single-sysle mode)\n or \n ./sim-mips -b m n c input_name  output_name(batch mode)\n");
+		printf("m,n,c stand for number of cycles needed by multiplication, other operation, and memory access, respectively\n");
+		exit(0);
+	}
+	if(input==NULL){
+		printf("Unable to open input or output file\n");
+		exit(0);
+	}
+	if(output==NULL){
+		printf("Cannot create output file\n");
+		exit(0);
+	}
+	//initialize registers and program counter
+	if(sim_mode==1){
+		for (i=0;i<REG_NUM;i++){
+			mips_reg[i]=0;
+		}
+	}
+	
+	//start your code from here
+}*/
+  
 
