@@ -22,7 +22,7 @@
   struct inst IDEXLatch;
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
-  struct inst *IMem; 
+  struct inst *instMem; 
   int pc;
   int branchUnresolved;
   int timer;
@@ -283,28 +283,47 @@ exit(1);
 //////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////PARSER/////////////////////////////////////////////////////
 //////Parameter --> output of regNumberConverter()///////////////////////////////////
-//////Return --> inst struct with fields for each of the files of MIPS instructions///
+//////Return --> inst struct with fields for each of the files of MIPS instructions//
+///////////////add - 1, sub - 2, mul - 3, lw - 4, sw - 5, addi - 6, beq - 7//////////
 //////////////////////////////////////////////////////////////////////////////////////
 
 struct inst parser(char *line){
   struct inst *newInst;
-  char *p;                //store each section after parse
-  char *instrname;         //name of instruction
-  int arg[3];             //integer array of argument values
-  int c=0, a=0;               //counters
-  
+  char *p = malloc(100*sizeof(char));                //store each section after parse
+  //char *instrname = malloc(4 * sizeof(char));         //name of instruction
+  int arg[4];             //integer array of argument values
+  int c=0, a=1;               //counters
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
-  while (p != NULL){            //loop through until done
-    if(c==0){                       //if first arg, put it into instrname
-    instrname = p;
+while (p != NULL){            //loop through until done
+    if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
+      arg[0] = 1;                       //add is 1
+    }
+    else if(strcmp(p, "sub")==0){        //sub is 2
+	arg[0]=2;
+    }
+    else if(strcmp(p, "mul")==0){         //mul is 3
+	arg[0]=3;
+    }
+    else if(strcmp(p, "lw")==0){            //lw is 4
+	arg[0]=4;
+    }
+   else if(strcmp(p, "sw")==0){                //sw is 5
+	arg[0]=5;
+    }
+   else if(strcmp(p, "addi")==0){           //addi is 6
+	arg[0]=6;
+    }
+   else if(strcmp(p, "beq")==0){          //beq is 7
+	arg[0]=7;
     }
     else{                          //convert p to integer and put it in arg array
       int ll = strlen(p);             //get length of argument
       int isD = 0, i;   
       for(i=0; i < ll; i++){
-	if(isdigit(p[i]))
-	  isD = 1;                   //check if each character is a digit
+	//printf("%c", p[i]);
+	if(isdigit(p[i])){
+	  	  isD = 1;}                   //check if each character is a digit
 	else
 	  isD = 0;
       }
@@ -323,52 +342,57 @@ struct inst parser(char *line){
       }
       else
       {
-	    Error_InvalidRegister();      //return not valid number error(or missing the $, ex. s0 instead of $s0 so it didn't get converted)
+///	printf("not a number");
+	Error_InvalidRegister();      //return not valid number error(or missing the $, ex. s0 instead of $s0 so it didn't get converted)
       }
     }
-    p = strtok (line, " ");          //get next section
+    p = strtok (NULL, " ");          //get next section
+    //printf("%s", p);
     c++;         
   }
     
    //////////////actually check which instructions it is and put the arguments in the right variables in the inst
    //if(index 0 is ADD, SUB, MUL) --> contains opcode, rs, rt, rd, funct (r)
 
-  if((strcmp(instrname, "add")==0) || (strcmp(instrname, "sub")==0) || (strcmp(instrname, "mul")==0)){      //if opcode is "add" or "sub" or "mul"
+  if((arg[0]==1) || (arg[0]==2) || (arg[0])==3){      //if opcode is "add" or "sub" or "mul", respectively
   int i;
-    for(i=0;i < 3; i++)
+    for(i=1;i < 4; i++)
     {
+	//printf("%d", arg[i]);
 	  if((arg[i] <= 31) && (arg[i] >= 0)){
-	    newInst->opcode = instrname;
-	    newInst->rs = arg[1];
-	    newInst->rt = arg[2];
-	    newInst->rd = arg[0];
+	    newInst->opcode = arg[0];
+	    newInst->rs = arg[2];
+	    newInst->rt = arg[3];
+	    newInst->rd = arg[1];
 	  }
 	  else{
+//	    printf("it's wrong?");
 		Error_InvalidRegister();            //throw invalid register error
 	  }
     }
 
   }
-  else if((strcmp(instrname, "lw")==0) || (strcmp(instrname, "sw")==0)){              // if opcode is "lw" or "sw"
-    if((arg[0] <= 31) && (arg[0] >= 0)){
-	newInst->rt = arg[0];
+  else if((arg[0]==4) || (arg[0]==5)){              // if opcode is "lw" or "sw", respectively
+  newInst->opcode=arg[0];
+    if((arg[1] <= 31) && (arg[1] >= 0)){
+	newInst->rt = arg[1];
       }
     else{
 	Error_InvalidRegister();           //return invalid registor error
     }
 	
 
-    if((arg[2] <= 31) && (arg[2] >= 0)){
-	newInst->rs = arg[2];
+    if((arg[3] <= 31) && (arg[3] >= 0)){
+	newInst->rs = arg[3];
     }
     else{
 	Error_InvalidRegister();             //return invalid registor error
     }
 
 
-    if((arg[1] <= 65535) && (arg[1] >= 0)){
-	if((arg[1] % 4) == 0){
-	  newInst->Imm = arg[1];
+    if((arg[2] <= 65535) && (arg[2] >= 0)){
+	if((arg[2] % 4) == 0){
+	  newInst->Imm = arg[2];
         }
         else{
 	  Error_MemoryMisalignment();           //return error memory misalignment error
@@ -378,32 +402,34 @@ struct inst parser(char *line){
 	Error_ImmediateField();                   //return error, either too small or bigger than largest unsigned 16-bit number
     }
   }
-  else if ((strcmp(instrname, "addi")==0) || (strcmp(instrname, "beq")==0)){                           // if opcode is "beq" or "addi"
-     if((arg[0] <= 31) && (arg[0] >= 0)){
-	newInst->rt = arg[0];
+  else if ((arg[0]==6) || (arg[0]==7)){                           // if opcode is "addi" or "beq" respectively
+    newInst->opcode=arg[0];
+
+    if((arg[1] <= 31) && (arg[1] >= 0)){
+	newInst->rt = arg[1];
       }
     else{
 	Error_InvalidRegister();                                         //return invalid registor error
     }
 	
 
-    if((arg[1] <= 31) && (arg[1] >= 0)){
-	newInst->rs = arg[1];
+    if((arg[2] <= 31) && (arg[2] >= 0)){
+	newInst->rs = arg[2];
     }
     else{
 	Error_InvalidRegister();                                   //return invalid registor error
     }
 
-    if((strcmp(instrname, "addi")==0) && (arg[2] < 65535)){
-	newInst->Imm = arg[2];
+    if((arg[0]==6) && (arg[3] < 65535)){
+	newInst->Imm = arg[3];
     }
     else{
 	Error_ImmediateField();                                //return immediate field too big
     }
 
-    if((strcmp(instrname, "beq")==0) && ((arg[2]%4)==0)){
-	if(arg[2] < 65535){
-		newInst->Imm = arg[2];
+    if((arg[0]==7) && ((arg[3]%4)==0)){
+	if(arg[3] < 65535){
+		newInst->Imm = arg[3];
 	}
 	else{
 		Error_ImmediateField();                //return too large immediate field
@@ -418,25 +444,62 @@ struct inst parser(char *line){
   else{
 	Error_IllegalOpcode();              //return illegal opcode error because it's not any of the valid ones
   }
-
+  //*/
+printf("Opcode: %d\n", newInst->opcode);
+printf("rs: %d\n", newInst->rs);
+printf("rd: %d\n", newInst->rd);
+printf("rt: %d\n", newInst->rt);
+printf("Imm: %d\n", newInst->Imm);
 
 }
 
-
-void IF(int currentInstrAddress){
+/////////////////////////////////////////////////////////////////////
+///////////////////////IF////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+void IF(){
   if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
-    IFIDLatch = IMEM;   /////Need to configure pipeline
-    if(IFIDLatch.op == 7){
+    IFIDLatch = instMem;          //Fetch from instruction memory
+    if(IFIDLatch.op == 7){        //If branch set branch unresolved and finish branch before continuing
       branchUnresolved = 1;
     }
     pc += 4;
     IFcount++;
-  
-  //fetch from instruction memory
-//freeze if unresolved branch
-//if branch, finish branch first before continuing
+}
 
 
+////////////////////////////////////////////////////////////////////
+//////////////////////////ID////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+void ID(){
+  static struct inst instruct = IFIDLatch;
+  if(instruct.op == 1 | 2 | 3){
+        //RType
+    IDEXLatch = out;
+    IDcount++;
+  }
+  else if(instruct.op == 4){
+       //LW
+    IDEXLatch = out;
+    IDcount++;
+  }
+  else if(instruct.op == 5){
+    //SW
+    IDEXLatch = out;
+    IDcount++;
+  }
+  else if(instruct.op == 6){
+    //addi
+    IDEXLatch = out;
+    IDcount++;
+  }
+  else if(instruct.op == 7){
+    //beq	
+    IDEXLatch = out;
+    IDcount++;
+  }
+  else{
+      //Return error // assertion
+  }
 }
 
 
@@ -456,6 +519,8 @@ void WB()
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
+//char test[] = "lwe 5 7 4";
+//parser(test);
   int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
   int c,m,n;
   int i;//for loop counter
@@ -463,11 +528,11 @@ void main (int argc, char *argv[]){
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
   //define your own counter for the usage of each pipeline stage here
-	
+  instMem = malloc((2048/4)*sizeof(struct inst));
   int test_counter=0;
   FILE *input=NULL;
   FILE *output=NULL;
-  printf("The arguments are:")
+  printf("The arguments are:");
   for(i=1;i<argc;i++){
     printf("%s ",argv[i]);
   }
