@@ -459,8 +459,8 @@ printf("rt: %d\n", newInst->rt);
 printf("Imm: %d\n", newInst->Imm);
 
 }
-
 /*
+
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -532,10 +532,36 @@ void ID(){
       //Return error // assertion
   }
 }
-*/
 
+
+////////////////////////////////////////////////////////////////////
+//////////////////////////EX////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+void ID(){
+  static struct inst instr = IFIDLatch;
+  if(instr.opcode == 1){       //add
+  }
+  else if(instr.opcode == 2){ //sub
+	}
+	else if(instr.opcode == 3){  //mul
+	} 
+	else if(instr.opcode == 4){  //lw
+	}
+	else if(instr.opcode == 5){  //sw
+	}
+	else if(instr.opcode == 6){  //addi
+	}
+	else if(instr.opcode == 7){  //bq
+	}
+  else{
+      //Return error // assertion
+  }
+}
+
+*/
 /*
-void EX()
+
 void MEM()
 void WB()
  all data, structural and control hazards must be taken into account
@@ -549,11 +575,25 @@ void WB()
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-char test[] = "beq $ra $8 8";
-parser(regNumberConverter(progScanner(test)));
+	char test[] = "beq $ra $8 8";
+	parser(regNumberConverter(progScanner(test)));
 //regNumberConverter(progScanner(test));
 //progScanner(test);
-	reg = malloc(32*sizeofint);
+
+//Initialize variables
+	instMem = malloc((2048/4)*sizeof(struct inst));
+  rawHaz = malloc(32*sizeofint);
+	IFIDLatch = {0,0,0,0};
+	IDEXLatch = {0,0,0,0};
+	EXMEMLatch = {0,0,0,0};
+	MEMWBLatch = {0,0,0,0};
+	IFcount = 0;
+	IDcount = 0;
+	EXcount = 0;
+	MEMcount = 0;
+	WBcount = 0;
+	branchUnresolved = 0;
+
 /*  int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
   int c,m,n;
   int i;//for loop counter
