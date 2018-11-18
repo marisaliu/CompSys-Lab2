@@ -23,10 +23,13 @@
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
   struct inst *instMem; 
+<<<<<<< HEAD
+	int *rawHaz //array of flags for each reg
+=======
   int pc;
   int *rawHaz; //array of flags for each reg
+>>>>>>> a304fc34d152b281f95999e002c507d25e3ab9ae
   int branchUnresolved;
-  int timer;
   int IFcount;
   int IDcount;
   int Excount;
@@ -476,19 +479,30 @@ printf("Imm: %d\n", newInst->Imm);
 }
 
 
-
-    /*                
+                
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
+//Fetches instruction from instruction memory
+//If there is a branch that is unresolved finish resolving the branch before continuing
 void IF(){
-  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
-    IFIDLatch = instMem;          //Fetch from instruction memory
-    if(IFIDLatch.opcode == 7){        //If branch set branch unresolved and finish branch before continuing
-      branchUnresolved = 1;
-    }
-    pc += 4;
-    IFcount++;
+	static int CycleCount = 0;
+	if(CycleCount == 0) CycleCount = c;
+	else if(CycleCount = 1){
+		if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
+			IFIDLatch = instMem(pgm_c/4);          
+			if(IFIDLatch.opcode == 7){    
+				branchUnresolved = 1;
+			}
+			pgm_c +=4;
+			IFcount++;
+			CycleCount--;
+		}
+	}
+	else{
+		CycleCount--;
+	}
+
 }
 
 
@@ -503,67 +517,49 @@ void IF(){
 //into the latch, and set the IFIDLatch to empty
 
 void ID(){
-
-  static struct inst instruct = IFIDLatch;
-  if(instruct.opcode == 1 | 2 | 3){
-        //RType
-    IDEXLatch = out;
-    IDcount++;
-  }
-  else if(instruct.opcode == 4){
-       //LW
-    IDEXLatch = out;
-    IDcount++;
-  }
-  else if(instruct.opcode == 5){
-    //SW
-    IDEXLatch = out;
-    IDcount++;
-  }
-  else if(instruct.opcode == 6){
-    //addi
-    IDEXLatch = out;
-    IDcount++;
-
-  static struct inst instr = IFIDLatch;
-  if((instr.opcode == 1) || (instr.opcode == 2) || (instr.opcode==3)){  //add, sub, or mul  
-    if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
-			rawHaz[instr.rd] = 1;                                      
+	struct inst in = IFIDLatch;
+	struct inst out = in;
+  if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
+    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			rawHaz[in.rd] = 1;  
+			out.rt = reg[in.rt];
+			out.rs = reg[in.rs];
 			if(IDEXLatch.opcode = 0){                                  
 				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = instr;
+				IDEXLatch = out;
 				IDcount++;
 			}
 		}
   }
-  else if((instr.opcode == 4) || (instr.opcode == 6){         //LW or addi
-    if(!rawHaz[instr.rs]){
+  else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
+    if(!rawHaz[in.rs]){
 			rawHaz[instr.rt] = 1;
+			out.rt = reg[in.rt];
 		  if(IDEXLatch.opcode = 0){
 				IFIDLatch.opcode = 0;
-			  IDEXLatch = instr;
+			  IDEXLatch = out;
 			  IDcount++;
 			} 
 		} 
   }
-  else if(instr.opcode == 5){          //SW
-     if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
-			rawHaz[instr.rt] = 1;                                      
+  else if(in.opcode == 5){          //SW
+     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			rawHaz[in.rt] = 1;
+			out.rt = reg[in.rt];
 			if(IDEXLatch.opcode = 0){                                  
 				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = instr;
+				IDEXLatch = out;
 				IDcount++;
 			}
 		}
 
   }
-  else if(instruct.opcode == 7){
-    //beq	
-     if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
+  else if(in.op == 7){ //beq	
+     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 			branchUnresolved = 1;                                      
 			if(IDEXLatch.opcode = 0){                                  
 				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = instr;
+				IDEXLatch = out;
 				IDcount++;
 			}
 		}
@@ -577,38 +573,106 @@ void ID(){
 ////////////////////////////////////////////////////////////////////
 //////////////////////////EX////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
-
-void ID(){
-  static struct inst instr = IFIDLatch;
-  if(instr.opcode == 1){       //add
-  }
-  else if(instr.opcode == 2){ //sub
-	}
-	else if(instr.opcode == 3){  //mul
-	} 
-	else if(instr.opcode == 4){  //lw
-	}
-	else if(instr.opcode == 5){  //sw
-	}
-	else if(instr.opcode == 6){  //addi
-	}
-	else if(instr.opcode == 7){  //bq
-	}
-  else{
+//When the previous instruction has finished the EX stage (when EXCycleCount = 0)
+//Do the correct operations based on the instruction and set how many cycles it should take
+//Then every time EX runs it will decrement the EXCycleCount by 1 
+//When the counter = 1 you will have finished the operation and set the output to the correct latch
+//based on if it needs the MEM stage or not
+void EX(){
+	struct inst in = IDEXLatch;
+	static struct inst out = in;
+	static int CycleCount = 0;
+	if(CycleCount == 0){
+		if(in.opcode == 1){       //add
+			out.rd = in.rs + in.rt;
+			CycleCount = n;
+			EXcount++;
+		}
+		else if(in.opcode == 2){ //sub
+			out.rd = in.rs - in.rt
+			CycleCount = n;
+			EXcount++;
+		}
+		else if(in.opcode == 3){  //mul
+			out.rd = in.rt*in.rs;
+			CycleCount = m;
+			Excount++;
+		} 
+		else if(in.opcode == 4){  //lw
+			out.rt = in.rs + in.Imm;         
+			CycleCount = n;
+			Excount++;
+		}
+		else if(in.opcode == 5){  //sw
+			out.rt = in.rs + in.Imm;
+			cycleNumber = n;
+			Excount++;
+		}
+		else if(in.opcode == 6){  //addi
+			out.rt = in.rs + in.Imm;
+			cycleNumber = n;
+			Excount++;
+		}
+		else if(in.opcode == 7){  //bq
+			if(in.rt == in.rs) pgm_c += in.Imm;
+			CycleCount = n;
+			branchPending = 0;
+			EXcount++;
+		}
+		else{
       //Return error // assertion
-  }
+		}
+	else if(CycleCount == 1){
+		if((in.opcode == 5) || (in.opcode == 6)){
+			if(EXMEMLatch.opcode == 0){
+				EXMEMLatch = out;
+			  EXCount++;
+				IDEXLatch.opcode = 0;
+				CycleCount--;
+			} 
+		} 
+	  else{ 
+			if(MEMWBLatch.opcode = 0){
+			  MEMWBLatch = out;
+				EXCount++;
+				IDEXLatch.opcode = 0;
+				CycleCount--;
+			} 
+    } 
+	} 
+	else{
+		CycleCount--;
+	}
 }
-  */                    
 
-/*
+////////////////////////////////////////////////////////////////////
+/////////////////////////MEM////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+void MEM(){
+	struct inst in = EXMEMLatch;
+	static struct inst out = in;
+	static struct inst CycleCount = 0;
+	if(CycleCount == 0){
+		if(in.opcode == 4){  // lw
+			out = DMem[in.rt];
+			CycleCount = c;
+		}
+		else if(in.opcode == 5){  //sw
+			DMem[in.rt] = out;
+			CycleCount = c;
+		}
+	}
+	else if(CycleCount == 1){
+		MEMWBLatch = out;
+		EXMEMLatch.opcode = 0;
+		MEMCycleCount--;
+	}
+	else{
+		CycleCount--;
+	}
+}
+                    
 
-void MEM()
-void WB()
- all data, structural and control hazards must be taken into account
- several operations are multicycle
- stages themselves are not pipelined
-   eg. if an add takes 4 cycles, next instruction cannot enter EX until cycles have elapsed
- */
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
@@ -643,8 +707,9 @@ parser(regNumberConverter(progScanner(test)));
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
   //define your own counter for the usage of each pipeline stage here
-  instMem = malloc((2048/4)*sizeof(struct inst));
-  int test_counter=0;
+	EXCycleCount;
+	
+	int test_counter=0;
   FILE *input=NULL;
   FILE *output=NULL;
   printf("The arguments are:");
@@ -708,6 +773,8 @@ parser(regNumberConverter(progScanner(test)));
   
   
   
+
+
   char traceEntry[100];
   char *hs="haltSimulation";
   
