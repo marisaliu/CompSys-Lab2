@@ -23,7 +23,12 @@
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
   struct inst *instMem; 
+<<<<<<< HEAD
 	int *rawHaz //array of flags for each reg
+=======
+  int pc;
+  int *rawHaz; //array of flags for each reg
+>>>>>>> a304fc34d152b281f95999e002c507d25e3ab9ae
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -62,19 +67,25 @@ struct inst
 //Input a string and get rid of any extra punction, spaces or parentheses///
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
-  char copy[strlen(currentLine)];   //make empty array of size currentLine
+  printf("Input line: %s \n", currentLine);
+  char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
-  for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
+
+ for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
+  //printf("%c \n", currentLine[i]);
     if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
-    copy[pos] = currentLine[i];
+      copy[pos] = currentLine[i];
     }
     else
-      copy[pos] = ' ';
+      copy[pos] = ' ';    
     pos++;
-    }
+  }
+  copy[pos]=0;
   
-  strcpy(currentLine, copy);     //copy end result to currentLine
+//  strcpy(currentLine, copy);     //copy end result to currentLine
+currentLine=copy;
+printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
   char *from , *to;
   int space=0;
@@ -89,7 +100,7 @@ char *progScanner(char* currentLine){
       if(!to[-1])break;
     }
   } 
-  printf("%s\n", currentLine);
+  printf("Fixed spaces: %s\n", currentLine);
   return currentLine;
 }
 
@@ -255,9 +266,9 @@ char *regNumberConverter(char *line){
     }
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
-    printf("%s\n", newNewLine);
+    printf("%s\n", newLine);
     return newNewLine;
-
+//return newLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -362,7 +373,7 @@ while (p != NULL){            //loop through until done
   int i;
     for(i=1;i < 4; i++)
     {
-	//printf("%d", arg[i]);
+
 	  if((arg[i] <= 31) && (arg[i] >= 0)){
 	    newInst->opcode = arg[0];
 	    newInst->rs = arg[2];
@@ -370,7 +381,6 @@ while (p != NULL){            //loop through until done
 	    newInst->rd = arg[1];
 	  }
 	  else{
-//	    printf("it's wrong?");
 		Error_InvalidRegister();            //throw invalid register error
 	  }
     }
@@ -459,13 +469,14 @@ printf("Imm: %d\n", newInst->Imm);
 }
 
 
+    /*                
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 void IF(){
   if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
     IFIDLatch = instMem;          //Fetch from instruction memory
-    if(IFIDLatch.op == 7){        //If branch set branch unresolved and finish branch before continuing
+    if(IFIDLatch.opcode == 7){        //If branch set branch unresolved and finish branch before continuing
       branchUnresolved = 1;
     }
     pgm_c +=4;
@@ -519,9 +530,9 @@ void ID(){
 				IDcount++;
 			}
 		}
+
   }
-  else if(in.op == 7){
-    //beq	
+  else if(in.op == 7){ //beq	
      if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
 			branchUnresolved = 1;                                      
 			if(IDEXLatch.opcode = 0){                                  
@@ -619,16 +630,19 @@ void MEM(){
 		MEMCycleCount--;
 	}
 }
+  */                    
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-	char test[] = "beq $ra $8 8";
-	parser(regNumberConverter(progScanner(test)));
+char test[] = "beq 31,, 8)             (8";
+parser(regNumberConverter(progScanner(test)));
 //regNumberConverter(progScanner(test));
 //progScanner(test);
 
+/*
 //Initialize variables
 	instMem = malloc((2048/4)*sizeof(struct inst));
   rawHaz = malloc(32*sizeofint);
@@ -642,7 +656,7 @@ void main (int argc, char *argv[]){
 	MEMcount = 0;
 	WBcount = 0;
 	branchUnresolved = 0;
-  
+
   int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
   int c,m,n;
   int i;//for loop counter
@@ -707,25 +721,32 @@ void main (int argc, char *argv[]){
   int dataAddress=0;
 
   char *traceEntry1;
-  FILE *ifp;
+  //FILE *ifp;
 
   traceEntry1 = malloc(200*sizeof(char));
-  ifp = fopen("./program.txt", "r");
+  //ifp = fopen("./program.txt", "r");
  
   
   
   
   
+
   /*
-  while(tracEntry1 != "haltSimulation"){
-    fgets(traceEntry1, 100, ifp);
+  char traceEntry[100];
+  char *hs="haltSimulation";
+  
+  while(strcmp(traceEntry1, hs) != 0){
+    fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
+  //  strcpy(traceEntry, traceEntry1);
+    //parser(regNumberConverter(progScanner(traceEntry)));
+    //progScanner(traceEntry);
   }
-  fclose(ifp);
+  fclose(input);
+*/
 
 
-
-
+/*
 
   //output statistics in batch mode
   if(sim_mode==0){
