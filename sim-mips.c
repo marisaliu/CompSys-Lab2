@@ -23,10 +23,8 @@
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
   struct inst *instMem; 
-  int pc;
 	int *rawHaz //array of flags for each reg
   int branchUnresolved;
-  int timer;
   int IFcount;
   int IDcount;
   int Excount;
@@ -459,7 +457,7 @@ printf("rt: %d\n", newInst->rt);
 printf("Imm: %d\n", newInst->Imm);
 
 }
-/*
+
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
@@ -470,7 +468,7 @@ void IF(){
     if(IFIDLatch.op == 7){        //If branch set branch unresolved and finish branch before continuing
       branchUnresolved = 1;
     }
-    pc += 4;
+    pgm_c +=4;
     IFcount++;
 }
 
@@ -486,44 +484,49 @@ void IF(){
 //into the latch, and set the IFIDLatch to empty
 
 void ID(){
-  static struct inst instr = IFIDLatch;
-  if((instr.opcode == 1) || (instr.opcode == 2) || (instr.opcode==3)){  //add, sub, or mul  
-    if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
-			rawHaz[instr.rd] = 1;                                      
+  static struct inst in = out;
+	struct inst in = IFIDLatch;
+  if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
+    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			rawHaz[instr.rd] = 1;  
+			out.rt = reg[in.rt];
+			out.rs = reg[in.rs];
 			if(IDEXLatch.opcode = 0){                                  
 				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = instr;
+				IDEXLatch = in;
 				IDcount++;
 			}
 		}
   }
-  else if((instr.opcode == 4) || (instr.opcode == 6){         //LW or addi
+  else if((in.opcode == 4) || (in.opcode == 6){         //LW or addi
     if(!rawHaz[instr.rs]){
 			rawHaz[instr.rt] = 1;
+			out.rt = reg[in.rt];
 		  if(IDEXLatch.opcode = 0){
 				IFIDLatch.opcode = 0;
-			  IDEXLatch = instr;
+			  IDEXLatch = in;
 			  IDcount++;
 			} 
 		} 
   }
-  else if(instr.opcode == 5){          //SW
+  else if(in.opcode == 5){          //SW
      if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
-			rawHaz[instr.rt] = 1;                                      
+			rawHaz[in.rt] = 1;
+			out.rt = reg[in.rt];
 			if(IDEXLatch.opcode = 0){                                  
 				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = instr;
+				IDEXLatch = in;
 				IDcount++;
 			}
 		}
   }
-  else if(instruct.op == 7){
+  else if(in.op == 7){
     //beq	
      if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
 			branchUnresolved = 1;                                      
 			if(IDEXLatch.opcode = 0){                                  
 				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = instr;
+				IDEXLatch = in;
 				IDcount++;
 			}
 		}
@@ -538,38 +541,84 @@ void ID(){
 //////////////////////////EX////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void ID(){
-  static struct inst instr = IFIDLatch;
-  if(instr.opcode == 1){       //add
-  }
-  else if(instr.opcode == 2){ //sub
-	}
-	else if(instr.opcode == 3){  //mul
-	} 
-	else if(instr.opcode == 4){  //lw
-	}
-	else if(instr.opcode == 5){  //sw
-	}
-	else if(instr.opcode == 6){  //addi
-	}
-	else if(instr.opcode == 7){  //bq
-	}
-  else{
+void EX(){
+	static struct inst out = in;
+	if(EXCycleCount == 0){
+		if(in.opcode == 1){       //add
+			out.rd = in.rs + in.rt;
+			cycleNumber = n;
+			EXcount++;
+		}
+		else if(in.opcode == 2){ //sub
+			out.rd = in.rs - in.rt
+			cycleNumber = n;
+			EXcount++;
+		}
+		else if(in.opcode == 3){  //mul
+			out.rd = in.rt*in.rs;
+			cycleNumber = m;
+			Excount++;
+		} 
+		else if(in.opcode == 4){  //lw
+			out.rt = in.rs + in.Imm;         
+			cycleNumber = c;
+			Excount++;
+		}
+		else if(in.opcode == 5){  //sw
+			out.rt = in.rs + in.Imm;
+			cycleNumber = c;
+			Excount++;
+		}
+		else if(in.opcode == 6){  //addi
+			out.rt = in.rs + in.Imm;
+			cycleNumber = n;
+			Excount++;
+		}
+		else if(in.opcode == 7){  //bq
+			if(in.rt == in.rs) pgm_c += in.Imm;
+			cycleNumber = n;
+			branchPending = 0;
+			EXcount++;
+		}
+		else{
       //Return error // assertion
-  }
+		}
+	else if(EXCycleCount == 1){
+		if(ExMEMLatch.out == 0){
+			EXcount++;
+			EXMEMLatch = out;
+			IDEXLatch.opcode = 0;
+			EXCycleCount --;
+	}
+	else{
+		EXCycleCount--;
+	}
 }
 
-*/
-/*
-
-void MEM()
-void WB()
- all data, structural and control hazards must be taken into account
- several operations are multicycle
- stages themselves are not pipelined
-   eg. if an add takes 4 cycles, next instruction cannot enter EX until cycles have elapsed
-
- */
+////////////////////////////////////////////////////////////////////
+/////////////////////////MEM////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+void MEM(){
+	struct inst in = EXMEMLatch;
+	static struct inst out = in;
+	if(MEMCycleCount == 0){
+		if(in.opcode == 4){  // lw
+			out = DMem[in.rt];
+			cycleNumber = c;
+		}
+		else if(in.opcode == 5){  //sw
+			DMem[in.rt] = out;
+		}
+	}
+	else if(MEMCycleCount == 1){
+		MEMWBLatch = out;
+		EXMEMLatch.opcode = 0;
+		MEMCycleCount--;
+	}
+	else{
+		MEMCycleCount--;
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
@@ -593,16 +642,17 @@ void main (int argc, char *argv[]){
 	MEMcount = 0;
 	WBcount = 0;
 	branchUnresolved = 0;
-
-/*  int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
+  
+  int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
   int c,m,n;
   int i;//for loop counter
   long mips_reg[REG_NUM];
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
   //define your own counter for the usage of each pipeline stage here
-  instMem = malloc((2048/4)*sizeof(struct inst));
-  int test_counter=0;
+	EXCycleCount;
+	
+	int test_counter=0;
   FILE *input=NULL;
   FILE *output=NULL;
   printf("The arguments are:");
@@ -665,7 +715,7 @@ void main (int argc, char *argv[]){
   
   
   
-  */
+  
   /*
   while(tracEntry1 != "haltSimulation"){
     fgets(traceEntry1, 100, ifp);
