@@ -66,10 +66,11 @@ struct inst
 char *progScanner(char* currentLine){
   printf("Input line: %s \n", currentLine);
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
+  copy[strlen(currentLine)] = '\0';
   int i;
   int pos=0;
 
- for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
+/* for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
   //printf("%c \n", currentLine[i]);
     if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
       copy[pos] = currentLine[i];
@@ -78,10 +79,19 @@ char *progScanner(char* currentLine){
       copy[pos] = ' ';    
     pos++;
   }
-  copy[pos]=0;
+ // copy[pos]= '\0';
   
 //  strcpy(currentLine, copy);     //copy end result to currentLine
 currentLine=copy;
+*/
+
+for(char *p = currentLine; *p; ++p)
+  if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' '))
+	currentLine[pos++] =*p;
+
+  currentLine[pos]='\0';
+
+
 printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
   char *from , *to;
@@ -605,6 +615,8 @@ void WB()
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
 char test[] = "beq 31,, 8)             (8";
+//char *t = "beq 31 8 8";
+//regNumberConverter(t);
 parser(regNumberConverter(progScanner(test)));
 //regNumberConverter(progScanner(test));
 //progScanner(test);
