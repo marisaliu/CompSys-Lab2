@@ -24,6 +24,7 @@
   struct inst MEMWBLatch;
   struct inst *instMem; 
   int pc;
+  int *rawHaz; //array of flags for each reg
   int branchUnresolved;
   int timer;
   int IFcount;
@@ -35,7 +36,23 @@
   int mode; 
 
   
-  
+ 
+////////////Enumeration type describing opcodes////////////
+//enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
+
+
+///Structure that holds data about the type of instruction 
+struct inst
+{
+  int opcode;
+  int rs;
+  int rt;
+  int rd;
+  int Imm;
+
+};
+
+ 
   
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
@@ -47,6 +64,7 @@
 //Input a string and get rid of any extra punction, spaces or parentheses///
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
+  printf("Input line: %s \n", currentLine);
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
@@ -64,7 +82,7 @@ char *progScanner(char* currentLine){
   
 //  strcpy(currentLine, copy);     //copy end result to currentLine
 currentLine=copy;
-printf("%s", currentLine);
+printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
   char *from , *to;
   int space=0;
@@ -79,25 +97,9 @@ printf("%s", currentLine);
       if(!to[-1])break;
     }
   } 
-  printf("%s\n", currentLine);
+  printf("Fixed spaces: %s\n", currentLine);
   return currentLine;
 }
-
-
-////////////Enumeration type describing opcodes////////////
-//enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
-
-
-///Structure that holds data about the type of instruction 
-struct inst
-{
-  int opcode;
-  int rs;
-  int rt;
-  int rd;
-  int Imm;
-
-};
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////REGNUMBERCONVERTER//////////////////////////////////////
@@ -368,7 +370,7 @@ while (p != NULL){            //loop through until done
   int i;
     for(i=1;i < 4; i++)
     {
-	//printf("%d", arg[i]);
+
 	  if((arg[i] <= 31) && (arg[i] >= 0)){
 	    newInst->opcode = arg[0];
 	    newInst->rs = arg[2];
@@ -376,7 +378,6 @@ while (p != NULL){            //loop through until done
 	    newInst->rd = arg[1];
 	  }
 	  else{
-//	    printf("it's wrong?");
 		Error_InvalidRegister();            //throw invalid register error
 	  }
     }
@@ -464,6 +465,8 @@ printf("Imm: %d\n", newInst->Imm);
 
 }
 
+
+
     /*                
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
@@ -482,7 +485,15 @@ void IF(){
 ////////////////////////////////////////////////////////////////////
 //////////////////////////ID////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
+//For each type of instruction check the appropriate raw hazard
+//If there is a raw hazard do nothing 
+//If there is no raw hazard continue and set the appropriate raw hazard 
+//flag for the register that is being calculated 
+//Check that the IDEXLatch is empty and if it is put the instruction 
+//into the latch, and set the IFIDLatch to empty
+
 void ID(){
+
   static struct inst instruct = IFIDLatch;
   if(instruct.opcode == 1 | 2 | 3){
         //RType
@@ -503,12 +514,76 @@ void ID(){
     //addi
     IDEXLatch = out;
     IDcount++;
+
+  static struct inst instr = IFIDLatch;
+  if((instr.opcode == 1) || (instr.opcode == 2) || (instr.opcode==3)){  //add, sub, or mul  
+    if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
+			rawHaz[instr.rd] = 1;                                      
+			if(IDEXLatch.opcode = 0){                                  
+				IFIDLatch.opcode = 0;                                     
+				IDEXLatch = instr;
+				IDcount++;
+			}
+		}
+  }
+  else if((instr.opcode == 4) || (instr.opcode == 6){         //LW or addi
+    if(!rawHaz[instr.rs]){
+			rawHaz[instr.rt] = 1;
+		  if(IDEXLatch.opcode = 0){
+				IFIDLatch.opcode = 0;
+			  IDEXLatch = instr;
+			  IDcount++;
+			} 
+		} 
+  }
+  else if(instr.opcode == 5){          //SW
+     if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
+			rawHaz[instr.rt] = 1;                                      
+			if(IDEXLatch.opcode = 0){                                  
+				IFIDLatch.opcode = 0;                                     
+				IDEXLatch = instr;
+				IDcount++;
+			}
+		}
+
   }
   else if(instruct.opcode == 7){
     //beq	
-    IDEXLatch = out;
-    IDcount++;
+     if(!(rawHaz[instr.rs] || rawHaz[instr.rt])){               
+			branchUnresolved = 1;                                      
+			if(IDEXLatch.opcode = 0){                                  
+				IFIDLatch.opcode = 0;                                     
+				IDEXLatch = instr;
+				IDcount++;
+			}
+		}
   }
+  else{
+      //Return error // assertion
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//////////////////////////EX////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+void ID(){
+  static struct inst instr = IFIDLatch;
+  if(instr.opcode == 1){       //add
+  }
+  else if(instr.opcode == 2){ //sub
+	}
+	else if(instr.opcode == 3){  //mul
+	} 
+	else if(instr.opcode == 4){  //lw
+	}
+	else if(instr.opcode == 5){  //sw
+	}
+	else if(instr.opcode == 6){  //addi
+	}
+	else if(instr.opcode == 7){  //bq
+	}
   else{
       //Return error // assertion
   }
@@ -516,8 +591,7 @@ void ID(){
   */                    
 
 /*
-void ID()
-void EX()
+
 void MEM()
 void WB()
  all data, structural and control hazards must be taken into account
@@ -535,7 +609,22 @@ parser(regNumberConverter(progScanner(test)));
 //regNumberConverter(progScanner(test));
 //progScanner(test);
 
-  /*int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
+/*
+//Initialize variables
+	instMem = malloc((2048/4)*sizeof(struct inst));
+  rawHaz = malloc(32*sizeofint);
+	IFIDLatch = {0,0,0,0};
+	IDEXLatch = {0,0,0,0};
+	EXMEMLatch = {0,0,0,0};
+	MEMWBLatch = {0,0,0,0};
+	IFcount = 0;
+	IDcount = 0;
+	EXcount = 0;
+	MEMcount = 0;
+	WBcount = 0;
+	branchUnresolved = 0;
+
+  int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
   int c,m,n;
   int i;//for loop counter
   long mips_reg[REG_NUM];
