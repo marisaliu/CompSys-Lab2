@@ -47,19 +47,24 @@
 //Input a string and get rid of any extra punction, spaces or parentheses///
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
-  char copy[strlen(currentLine)];   //make empty array of size currentLine
+  char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
-  for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
+
+ for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
+  //printf("%c \n", currentLine[i]);
     if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
-    copy[pos] = currentLine[i];
+      copy[pos] = currentLine[i];
     }
     else
-      copy[pos] = ' ';
+      copy[pos] = ' ';    
     pos++;
-    }
+  }
+  copy[pos]=0;
   
-  strcpy(currentLine, copy);     //copy end result to currentLine
+//  strcpy(currentLine, copy);     //copy end result to currentLine
+currentLine=copy;
+printf("%s", currentLine);
 ///////////remove and leave only 1 space
   char *from , *to;
   int space=0;
@@ -256,9 +261,9 @@ char *regNumberConverter(char *line){
     }
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
-    printf("%s\n", newNewLine);
+    printf("%s\n", newLine);
     return newNewLine;
-
+//return newLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -459,14 +464,14 @@ printf("Imm: %d\n", newInst->Imm);
 
 }
 
-                    /*
+    /*                
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 void IF(){
   if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
     IFIDLatch = instMem;          //Fetch from instruction memory
-    if(IFIDLatch.op == 7){        //If branch set branch unresolved and finish branch before continuing
+    if(IFIDLatch.opcode == 7){        //If branch set branch unresolved and finish branch before continuing
       branchUnresolved = 1;
     }
     pc += 4;
@@ -479,27 +484,27 @@ void IF(){
 ////////////////////////////////////////////////////////////////////
 void ID(){
   static struct inst instruct = IFIDLatch;
-  if(instruct.op == 1 | 2 | 3){
+  if(instruct.opcode == 1 | 2 | 3){
         //RType
     IDEXLatch = out;
     IDcount++;
   }
-  else if(instruct.op == 4){
+  else if(instruct.opcode == 4){
        //LW
     IDEXLatch = out;
     IDcount++;
   }
-  else if(instruct.op == 5){
+  else if(instruct.opcode == 5){
     //SW
     IDEXLatch = out;
     IDcount++;
   }
-  else if(instruct.op == 6){
+  else if(instruct.opcode == 6){
     //addi
     IDEXLatch = out;
     IDcount++;
   }
-  else if(instruct.op == 7){
+  else if(instruct.opcode == 7){
     //beq	
     IDEXLatch = out;
     IDcount++;
@@ -508,7 +513,7 @@ void ID(){
       //Return error // assertion
   }
 }
-                    */
+  */                    
 
 /*
 void ID()
@@ -519,19 +524,18 @@ void WB()
  several operations are multicycle
  stages themselves are not pipelined
    eg. if an add takes 4 cycles, next instruction cannot enter EX until cycles have elapsed
-
  */
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-char test[] = "beq $ra $8 8";
+char test[] = "beq 31,, 8)             (8";
 parser(regNumberConverter(progScanner(test)));
 //regNumberConverter(progScanner(test));
 //progScanner(test);
 
-/*  int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
+  /*int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
   int c,m,n;
   int i;//for loop counter
   long mips_reg[REG_NUM];
@@ -594,25 +598,30 @@ parser(regNumberConverter(progScanner(test)));
   int dataAddress=0;
 
   char *traceEntry1;
-  FILE *ifp;
+  //FILE *ifp;
 
   traceEntry1 = malloc(200*sizeof(char));
-  ifp = fopen("./program.txt", "r");
+  //ifp = fopen("./program.txt", "r");
  
   
   
   
-  */
-  /*
-  while(tracEntry1 != "haltSimulation"){
-    fgets(traceEntry1, 100, ifp);
+  
+  char traceEntry[100];
+  char *hs="haltSimulation";
+  
+  while(strcmp(traceEntry1, hs) != 0){
+    fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
+  //  strcpy(traceEntry, traceEntry1);
+    //parser(regNumberConverter(progScanner(traceEntry)));
+    //progScanner(traceEntry);
   }
-  fclose(ifp);
+  fclose(input);
+*/
 
 
-
-
+/*
 
   //output statistics in batch mode
   if(sim_mode==0){
