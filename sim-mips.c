@@ -23,12 +23,7 @@
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
   struct inst *instMem; 
-<<<<<<< HEAD
 	int *rawHaz //array of flags for each reg
-=======
-  int pc;
-  int *rawHaz; //array of flags for each reg
->>>>>>> a304fc34d152b281f95999e002c507d25e3ab9ae
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -523,7 +518,7 @@ void ID(){
   }
   else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
     if(!rawHaz[in.rs]){
-			rawHaz[instr.rt] = 1;
+			rawHaz[in.rt] = 1;
 			out.rt = reg[in.rt];
 		  if(IDEXLatch.opcode = 0){
 				IFIDLatch.opcode = 0;
@@ -574,37 +569,37 @@ void EX(){
 	static int CycleCount = 0;
 	if(CycleCount == 0){
 		if(in.opcode == 1){       //add
-			out.rd = in.rs + in.rt;
+			out.rs = in.rs + in.rt;
 			CycleCount = n;
 			EXcount++;
 		}
 		else if(in.opcode == 2){ //sub
-			out.rd = in.rs - in.rt
+			out.rs = in.rs - in.rt;
 			CycleCount = n;
 			EXcount++;
 		}
 		else if(in.opcode == 3){  //mul
-			out.rd = in.rt*in.rs;
+			out.rs = in.rt*in.rs;
 			CycleCount = m;
 			Excount++;
 		} 
 		else if(in.opcode == 4){  //lw
-			out.rt = in.rs + in.Imm;         
+			out.rs = in.rs + in.Imm;         
 			CycleCount = n;
 			Excount++;
 		}
 		else if(in.opcode == 5){  //sw
-			out.rt = in.rs + in.Imm;
+			out.rs = in.rs + in.Imm;
 			cycleNumber = n;
 			Excount++;
 		}
 		else if(in.opcode == 6){  //addi
-			out.rt = in.rs + in.Imm;
+			out.rs = in.rs + in.Imm;
 			cycleNumber = n;
 			Excount++;
 		}
 		else if(in.opcode == 7){  //bq
-			if(in.rt == in.rs) pgm_c += in.Imm;
+			if(in.rs == in.rs) pgm_c += in.Imm;
 			CycleCount = n;
 			branchPending = 0;
 			EXcount++;
@@ -613,7 +608,7 @@ void EX(){
       //Return error // assertion
 		}
 	else if(CycleCount == 1){
-		if((in.opcode == 5) || (in.opcode == 6)){
+		if((in.opcode == 5j) || (in.opcode == 6)){
 			if(EXMEMLatch.opcode == 0){
 				EXMEMLatch = out;
 			  EXCount++;
@@ -644,11 +639,11 @@ void MEM(){
 	static struct inst CycleCount = 0;
 	if(CycleCount == 0){
 		if(in.opcode == 4){  // lw
-			out = DMem[in.rt];
+			out = DMem[in.rs];
 			CycleCount = c;
 		}
 		else if(in.opcode == 5){  //sw
-			DMem[in.rt] = out;
+			DMem[in.rs] = out;
 			CycleCount = c;
 		}
 	}
@@ -662,6 +657,32 @@ void MEM(){
 	}
 }
                     
+/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////WB/////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+void WB(){
+	struct inst in = MEMWBLatch;
+  if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ||){  //add, sub, mul  
+    reg[in.rd] = in.rs;
+		rawHaz[in.rd] = 0;
+		WBcount++;
+  }
+	else if((in.opcode == 5) || (in.opcode == 6)){   //addi,sw
+		reg[in.rt] = in.rs;
+		rawHaz[in.rt] = 0;
+		WBcount++;
+  else{
+      //Return error // assertion
+  }
+}
+
+
+
+
+
+
+}
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
