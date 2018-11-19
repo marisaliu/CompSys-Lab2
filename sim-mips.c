@@ -15,6 +15,18 @@
 #define BATCH 0
 #define REG_NUM 32
 
+
+///Structure that holds data about the type of instruction 
+struct inst
+{
+  int opcode;
+  int rs;
+  int rt;
+  int rd;
+  int Imm;
+
+};
+
  ///////////////////////////////////////////////////////////////////////
  /////////////////////GLOBAL VARIABLES//////////////////////////////////
  ///////////////////////////////////////////////////////////////////////
@@ -22,8 +34,8 @@
   struct inst IDEXLatch;
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
-  int *rawHaz; //array of flags for each reg
-  struct inst *instMem;  
+  int rawHaz[32]; //array of flags for each reg
+  struct inst instMem[512];  
   int pc;
   struct inst EXout;
   struct inst MEMout;
@@ -45,18 +57,6 @@
 //enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
 
 
-///Structure that holds data about the type of instruction 
-struct inst
-{
-  int opcode;
-  int rs;
-  int rt;
-  int rd;
-  int Imm;
-
-};
-
- 
   
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
@@ -704,8 +704,8 @@ char test[] = "beq 31,, 8)             (8";
 
 
 //Initialize variables
-	instMem = malloc((2048/4)*sizeof(struct inst));
-        rawHaz = malloc(32*sizeof(int));
+	//struct inst instMem[2048/4];    initialized as global
+   //rawHaz = malloc(32*sizeof(int));
 //	IFIDLatch = {0,0,0,0,0};
 	IFIDLatch.opcode = 0;
 	IFIDLatch.rs = 0;
@@ -812,12 +812,12 @@ char test[] = "beq 31,, 8)             (8";
 
   char traceEntry[100];
   char *hs="haltSimulation";
-  
+  int instIndex = 0;
   while(strcmp(traceEntry1, hs) != 0){
     fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
   //  strcpy(traceEntry, traceEntry1);
-    parser(traceEntry1);
+    instMem[instIndex++] = parser(traceEntry1);
     //progScanner(traceEntry);
   }
   fclose(input);
