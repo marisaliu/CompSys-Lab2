@@ -70,25 +70,8 @@ struct inst
 char *progScanner(char* currentLine){
   printf("Input line: %s \n", currentLine);
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
-  copy[strlen(currentLine)] = '\0';
   int i;
   int pos=0;
-
-/* for(i=0; i<strlen(currentLine); i++){   //loops through and only copy stuff we want
-  //printf("%c \n", currentLine[i]);
-    if((currentLine[i] != ',') && (currentLine[i] != '(') && (currentLine[i] != ')')){
-      copy[pos] = currentLine[i];
-    }
-    else
-      copy[pos] = ' ';    
-    pos++;
-  }
- // copy[pos]= '\0';
-  
-//  strcpy(currentLine, copy);     //copy end result to currentLine
-
-currentLine=copy;
-*/
 
 for(char *p = currentLine; *p; ++p)
   if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' '))
@@ -99,26 +82,11 @@ for(char *p = currentLine; *p; ++p)
 
 printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
-/*  char *from , *to;
-  int space=0;
-  to=from=currentLine;      
-
-  while(1){
-    if(space && *from == ' ' && to[-1] == ' ') 
-    ++from;
-    else{
-      space = (*from==' ')? 1 : 0;
-      *to++ = *from++;
-      if(!to[-1])break;
-    }
-  }
-*/
   int x;
-  for(i=x=0; copy[i]; ++i){
-    if(!isspace(copy[i]) || (i > 0 && !isspace(copy[i-1]))) copy[x++] = copy[i];
+  for(i=x=0; currentLine[i]; ++i){
+    if(!isspace(currentLine[i]) || (i > 0 && !isspace(currentLine[i-1]))) currentLine[x++] = currentLine[i];
   }
-  copy[x] = '\0';
-  strncpy(currentLine, copy, x+1);
+  currentLine[x] = '\0';
   printf("Fixed spaces: %s\n", currentLine);
   return currentLine;
 }
@@ -490,7 +458,7 @@ printf("Imm: %d\n", newInst->Imm);
 }
 
 
-/*              
+              
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -722,12 +690,12 @@ void WB(){
   }
 }
 
-*/
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-//char test[] = "beq 31,, 8)             (8";
+char test[] = "beq 31,, 8)             (8";
 //char *t = "beq 31 8 8";
 //regNumberConverter(t);
 //parser(regNumberConverter(progScanner(test)));
