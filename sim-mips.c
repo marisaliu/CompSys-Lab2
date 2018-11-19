@@ -845,7 +845,7 @@ void main (int argc, char *argv[]){
   while(strcmp(traceEntry1, hs) != 0){
     fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
-  //  strcpy(traceEntry, traceEntry1);
+  //  strcpy(traceEntry, traceEntry1); 
     parser(traceEntry1);
     //progScanner(traceEntry);
   }
