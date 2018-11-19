@@ -22,13 +22,10 @@
   struct inst IDEXLatch;
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
-  struct inst *instMem; 
-<<<<<<< HEAD
-	int *rawHaz //array of flags for each reg
-=======
+  struct inst *instMem;
+  int *rawHaz; //array of flags for each reg
   int pc;
   int *rawHaz; //array of flags for each reg
->>>>>>> a304fc34d152b281f95999e002c507d25e3ab9ae
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -321,7 +318,8 @@ struct inst parser(char *line){
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
 while (p != NULL){            //loop through until done
-    if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
+  printf("p is: %s \n", p);  
+  if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
       arg[0] = 1;                       //add is 1
     }
     else if(strcmp(p, "sub")==0){        //sub is 2
@@ -351,8 +349,9 @@ while (p != NULL){            //loop through until done
 	  	  isD = 1;}                   //check if each character is a digit
 	else
 	  isD = 0;
-      }
-      
+       }
+	
+    printf("isD: %d \n", isD);  
       if(isD == 1){        //check that each argument is a number, if not return error
         if(ll == 1){
 	  arg[a] = p[0] - '0';
@@ -375,7 +374,7 @@ while (p != NULL){            //loop through until done
     //printf("%s", p);
     c++;         
   }
-    
+    printf("%d \n", arg[0]);
    //////////////actually check which instructions it is and put the arguments in the right variables in the inst
    //if(index 0 is ADD, SUB, MUL) --> contains opcode, rs, rt, rd, funct (r)
 //printf("%d",arg[0]);
@@ -444,7 +443,7 @@ while (p != NULL){            //loop through until done
 	Error_InvalidRegister();                                   //return invalid registor error
     }
 
-    if((arg[0]==6) && (arg[3] < 65535)){
+    if((arg[0]==6) && (arg[3] < 65535)){                       //if opcode is addi
 	newInst->Imm = arg[3];
     }
     else{
@@ -479,7 +478,7 @@ printf("Imm: %d\n", newInst->Imm);
 }
 
 
-                
+/*              
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -672,30 +671,54 @@ void MEM(){
 	}
 }
                     
-
+*/
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-char test[] = "beq 31,, 8)             (8";
+//char test[] = "beq 31,, 8)             (8";
 //char *t = "beq 31 8 8";
 //regNumberConverter(t);
-parser(regNumberConverter(progScanner(test)));
+//parser(regNumberConverter(progScanner(test)));
 //regNumberConverter(progScanner(test));
 //progScanner(test);
 
-/*
+
 //Initialize variables
 	instMem = malloc((2048/4)*sizeof(struct inst));
-  rawHaz = malloc(32*sizeofint);
-	IFIDLatch = {0,0,0,0};
-	IDEXLatch = {0,0,0,0};
-	EXMEMLatch = {0,0,0,0};
-	MEMWBLatch = {0,0,0,0};
+        rawHaz = malloc(32*sizeof(int));
+//	IFIDLatch = {0,0,0,0,0};
+	IFIDLatch.opcode = 0;
+	IFIDLatch.rs = 0;
+	IFIDLatch.rt = 0;
+	IFIDLatch.rd = 0;
+	IFIDLatch.Imm = 0;
+
+	//IDEXLatch = {0,0,0,0};
+	IDEXLatch.opcode = 0;
+	IDEXLatch.rs = 0;
+	IDEXLatch.rd = 0;
+	IDEXLatch.rt = 0;
+	IDEXLatch.Imm = 0;
+	
+	//EXMEMLatch = {0,0,0,0};
+	EXMEMLatch.opcode = 0;
+	EXMEMLatch.rs = 0;
+	EXMEMLatch.rd = 0;
+	EXMEMLatch.rt = 0;
+	EXMEMLatch.Imm = 0;
+	
+	//MEMWBLatch = {0,0,0,0};
+	MEMWBLatch.opcode = 0;
+	MEMWBLatch.rs = 0;
+	MEMWBLatch.rt = 0;
+	MEMWBLatch.rd = 0;
+	MEMWBLatch.Imm = 0;
+	
 	IFcount = 0;
 	IDcount = 0;
-	EXcount = 0;
+	Excount = 0;
 	MEMcount = 0;
 	WBcount = 0;
 	branchUnresolved = 0;
@@ -707,9 +730,8 @@ parser(regNumberConverter(progScanner(test)));
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
   //define your own counter for the usage of each pipeline stage here
-	EXCycleCount;
 	
-	int test_counter=0;
+  int test_counter=0;
   FILE *input=NULL;
   FILE *output=NULL;
   printf("The arguments are:");
@@ -756,9 +778,9 @@ parser(regNumberConverter(progScanner(test)));
   }
 
 	//start your code from here
-  int *instructionMemory;
-  instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
-  int instructionAddress=0;
+  //int *instructionMemory;
+  //instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
+  //int instructionAddress=0;
   int *dataMemory;
   dataMemory = (int *)malloc(500 * sizeof(int));
   int dataAddress=0;
@@ -769,11 +791,6 @@ parser(regNumberConverter(progScanner(test)));
   traceEntry1 = malloc(200*sizeof(char));
   //ifp = fopen("./program.txt", "r");
  
-  
-  
-  
-  
-
 
   char traceEntry[100];
   char *hs="haltSimulation";
@@ -782,11 +799,11 @@ parser(regNumberConverter(progScanner(test)));
     fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
   //  strcpy(traceEntry, traceEntry1);
-    //parser(regNumberConverter(progScanner(traceEntry)));
+    parser(traceEntry1);
     //progScanner(traceEntry);
   }
   fclose(input);
-*/
+
 
 
 /*
