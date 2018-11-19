@@ -22,14 +22,13 @@
   struct inst IDEXLatch;
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
-  struct inst *instMem;
   int *rawHaz; //array of flags for each reg
+  struct inst *instMem;  
   int pc;
-   struct inst *instMem; 
-	struct inst EXout;
-	struct inst MEMout;
-	int *DMem;
-	int *reg; //what is in each register
+  struct inst EXout;
+  struct inst MEMout;
+  int *DMem;
+  int *reg; //what is in each register
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -87,6 +86,7 @@ char *progScanner(char* currentLine){
  // copy[pos]= '\0';
   
 //  strcpy(currentLine, copy);     //copy end result to currentLine
+
 currentLine=copy;
 */
 
@@ -99,7 +99,7 @@ for(char *p = currentLine; *p; ++p)
 
 printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
-  char *from , *to;
+/*  char *from , *to;
   int space=0;
   to=from=currentLine;      
 
@@ -111,7 +111,14 @@ printf("Removed punctuation: %s \n", currentLine);
       *to++ = *from++;
       if(!to[-1])break;
     }
-  } 
+  }
+*/
+  int x;
+  for(i=x=0; copy[i]; ++i){
+    if(!isspace(copy[i]) || (i > 0 && !isspace(copy[i-1]))) copy[x++] = copy[i];
+  }
+  copy[x] = '\0';
+  strncpy(currentLine, copy, x+1);
   printf("Fixed spaces: %s\n", currentLine);
   return currentLine;
 }
@@ -570,6 +577,9 @@ void ID(){
   }
   else{
       //Return error // assertion
+	 printf("ID: OPCODE ERROR\n");
+	 assert(in.opcode<7 || in.opcode>0);
+	 exit(0);
   }
 }
 
@@ -625,6 +635,9 @@ void EX(){
 		}
 		else{
       //Return error // assertion
+		  printf("EX: OPCODE ERROR\n");
+		  assert(in.opcode<7 && in.opcode>0);
+		  exit(0);
 		}
 	}
 	else if(CycleCount == 1){
@@ -665,6 +678,12 @@ void MEM(){
 		else if(in.opcode == 5){  //sw
 			DMem[in.rt] = MEMout.rs;
 			CycleCount = c;
+		}
+		else{
+		//invalid opcode
+		  printf("MEM: INVALID OPCODE\n");
+		  assert(in.opcode == 4 || in.opcode == 5);
+		  exit(0);
 		}
 	}
 	else if(CycleCount == 1){
