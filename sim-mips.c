@@ -578,7 +578,7 @@ void ID(){
   else{
       //Return error // assertion
 	 printf("ID: OPCODE ERROR\n");
-	 assert(in.opcode<7 || in.opcode>0);
+	 assert(in.opcode<8 || in.opcode>0);
 	 exit(0);
   }
 }
@@ -636,7 +636,7 @@ void EX(){
 		else{
       //Return error // assertion
 		  printf("EX: OPCODE ERROR\n");
-		  assert(in.opcode<7 && in.opcode>0);
+		  assert(in.opcode<8 && in.opcode>0);
 		  exit(0);
 		}
 	}
@@ -697,7 +697,7 @@ void MEM(){
 }
                     
 
-*/
+
 
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////WB/////////////////////////////////////////////
@@ -716,10 +716,13 @@ void WB(){
 	}
   else{
       //Return error // assertion
+    printf("WB: OPCODE ERROR\n");
+	 assert(in.opcode<7 || in.opcode>0);
+	 exit(0);
   }
 }
 
-
+*/
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
