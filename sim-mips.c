@@ -51,7 +51,7 @@ struct inst
   int mode; 
   int c,m,n;
   int pgm_c;
-  
+
  
 ////////////Enumeration type describing opcodes////////////
 //enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
@@ -576,6 +576,8 @@ printf("\n in opcode: %d", in.opcode);
 		}
   }
   else{
+	 //halt simulation
+	 if(in.opcode == 8) halt = 1;
       //Return error // assertion
 	 if(in.opcode != 0){
 	 printf("ID: OPCODE ERROR\n");
@@ -685,12 +687,14 @@ void MEM(){
 			CycleCount = c;
 		}
 		else{
-		//invalid opcode
-			if(in.opcode != 0){
-			  printf("MEM: INVALID OPCODE\n");
-				assert(in.opcode == 4 || in.opcode == 5);
-				exit(0);
-			}	
+		  //halt simulation
+		  if(in.opcode == 8) halt = 1;
+		  //invalid opcode
+		  if(in.opcode != 0){
+			 printf("MEM: INVALID OPCODE\n");
+			 assert(in.opcode == 4 || in.opcode == 5);
+			 exit(0);
+		  }	
 		}
 	}
 	if(CycleCount == 1){
@@ -725,7 +729,9 @@ void WB(){
 //		printf("reg %d: %d\n", in.rt, reg[in.rt]);
 	}
   else{
-      //Return error // assertion
+    //halt simulation
+    if(in.opcode == 8) halt = 1;
+	 //Return error // assertion
     if(in.opcode != 0){
 	   printf("WB: OPCODE ERROR\n");
 	   assert(in.opcode<7 || in.opcode>0);
