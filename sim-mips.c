@@ -847,12 +847,9 @@ char test[] = "beq 31,, 8)             (8";
 
   fgets(traceEntry1, 100, input);                 //get first line
   while(strcmp(traceEntry1, hs) != 0){                  //if it doesn't reach haltSimulation
-    printf("String input is %s \n", traceEntry1);
-    
+    printf("String input is %s \n", traceEntry1);    
     //  strcpy(traceEntry, traceEntry1);
     instMem[instIndex++] = parser(traceEntry1);
-    //progScanner(traceEntry);
-    //parser(traceEntry1);
     fgets(traceEntry1, 100, input);
   }
   fclose(input);
