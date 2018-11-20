@@ -51,7 +51,7 @@ struct inst
   int mode; 
   int c,m,n;
   int pgm_c;
-  
+  int EXfinish;  
  
 ////////////Enumeration type describing opcodes////////////
 //enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
@@ -590,9 +590,10 @@ void ID(){
 //When the counter = 1 you will have finished the operation and set the output to the correct latch
 //based on if it needs the MEM stage or not
 void EX(){
+  struct inst in;
 	static int CycleCount = 0;
 	if(CycleCount == 0){
-		struct inst in = IDEXLatch;
+		in = IDEXLatch;
 		EXout = in;
 		if(in.opcode == 1){       //add
 			EXout.rs = in.rs + in.rt;
@@ -625,7 +626,8 @@ void EX(){
 			EXcount++;
 		}
 		else if(in.opcode == 7){  //bq
-			if(in.rs == in.rs) pgm_c += in.Imm;
+		  	printf("pgm c: %d \n", pgm_c);
+			if(in.rs == in.rt) pgm_c += in.Imm;
 			CycleCount = n;
 			branchUnresolved = 0;
 			EXcount++;
@@ -638,26 +640,31 @@ void EX(){
 		}
 	}
 	else if(CycleCount == 1){
-		if((EXout.opcode == 5) || (EXout.opcode == 6)){
+		if((EXout.opcode == 4) || (EXout.opcode == 5)){
 			if(EXMEMLatch.opcode == 0){
 				EXMEMLatch = EXout;
 			  EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
+				  EXfinish=1;
 			} 
 		} 
 	  else{ 
-			if(MEMWBLatch.opcode = 0){
+			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = EXout;
 				EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
+				EXfinish=1;
 			} 
-    } 
+              } 
 	} 
 	else{
 		CycleCount--;
 	}
+////////////////////////
+printf("pgmc at end is: %d \n", pgm_c);
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -771,12 +778,12 @@ char test[] = "beq 31,, 8)             (8";
 	branchUnresolved = 0;
 
   int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
-  int c,m,n;
+//  int c,m,n;
   int i;//for loop counter
   long mips_reg[REG_NUM];
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
-  
+  EXfinish = 0;
 	rawHaz[32] = 0;
 	reg[32] = 0; 
   DMem = (int *)malloc(500 * sizeof(int));
@@ -845,15 +852,16 @@ char test[] = "beq 31,, 8)             (8";
   char *hs="haltSimulation\n";
   int instIndex = 0;
 
+
   fgets(traceEntry1, 100, input);                 //get first line
   while(strcmp(traceEntry1, hs) != 0){                  //if it doesn't reach haltSimulation
     printf("String input is %s \n", traceEntry1);    
     //  strcpy(traceEntry, traceEntry1);
-    instMem[instIndex++] = parser(traceEntry1);
+    //instMem[instIndex++] = parser(traceEntry1);
+    
     fgets(traceEntry1, 100, input);
   }
   fclose(input);
-
 
 
 
