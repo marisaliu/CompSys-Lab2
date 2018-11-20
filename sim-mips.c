@@ -637,9 +637,14 @@ void EX(){
 		}
 		else{
       //Return error // assertion
-		  printf("EX: OPCODE ERROR\n");
+		  if(in.opcode == 8){
+				halt = 1;
+			}
+			else if(in.opcode != 0){
+			printf("EX: OPCODE ERROR\n");
 		  assert(in.opcode<8 && in.opcode>0);
 		  exit(0);
+			}	
 		}
 	}
 	else if(CycleCount == 1){
@@ -652,7 +657,7 @@ void EX(){
 			} 
 		} 
 	  else{ 
-			if(MEMWBLatch.opcode = 0){
+			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = EXout;
 				EXcount++;
 				IDEXLatch.opcode = 0;
