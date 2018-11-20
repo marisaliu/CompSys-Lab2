@@ -290,12 +290,12 @@ exit(1);
 //////////////////////////////////////////////////////////////////////////////////////
 
 struct inst parser(char *line){
-  struct inst *newInst;
-  newInst->opcode=0;
-  newInst->rs=0;
-  newInst->rd=0;
-  newInst->rt=0;
-  newInst->Imm=0;
+  struct inst newInst;
+  newInst.opcode=0;
+  newInst.rs=0;
+  newInst.rd=0;
+  newInst.rt=0;
+  newInst.Imm=0;
   char *p = malloc(100*sizeof(char));                //store each section after parse
   //char *instrname = malloc(4 * sizeof(char));         //name of instruction
   int arg[4];             //integer array of argument values
@@ -387,10 +387,10 @@ while (p != NULL){            //loop through until done
     {
 
 	  if((arg[i] <= 31) && (arg[i] >= 0)){
-	    newInst->opcode = arg[0];
-	    newInst->rs = arg[2];
-	    newInst->rt = arg[3];
-	    newInst->rd = arg[1];
+	    newInst.opcode = arg[0];
+	    newInst.rs = arg[2];
+	    newInst.rt = arg[3];
+	    newInst.rd = arg[1];
 	  }
 	  else{
 		Error_InvalidRegister();            //throw invalid register error
@@ -399,9 +399,9 @@ while (p != NULL){            //loop through until done
 
   }
   else if((arg[0]==4) || (arg[0]==5)){              // if opcode is "lw" or "sw", respectively
-  newInst->opcode=arg[0];
+  newInst.opcode=arg[0];
     if((arg[1] <= 31) && (arg[1] >= 0)){
-	newInst->rt = arg[1];
+	newInst.rt = arg[1];
       }
     else{
 	Error_InvalidRegister();           //return invalid registor error
@@ -409,7 +409,7 @@ while (p != NULL){            //loop through until done
 	
 
     if((arg[3] <= 31) && (arg[3] >= 0)){
-	newInst->rs = arg[3];
+	newInst.rs = arg[3];
     }
     else{
 	Error_InvalidRegister();             //return invalid registor error
@@ -418,7 +418,7 @@ while (p != NULL){            //loop through until done
 
     if((arg[2] <= 65535) && (arg[2] >= 0)){
 	if((arg[2] % 4) == 0){
-	  newInst->Imm = arg[2];
+	  newInst.Imm = arg[2];
         }
         else{
 	  Error_MemoryMisalignment();           //return error memory misalignment error
@@ -429,10 +429,10 @@ while (p != NULL){            //loop through until done
     }
   }
   else if ((arg[0]==6) || (arg[0]==7)){                           // if opcode is "addi" or "beq" respectively
-    newInst->opcode=arg[0];
+    newInst.opcode=arg[0];
 
     if((arg[1] <= 31) && (arg[1] >= 0)){
-	newInst->rt = arg[1];
+	newInst.rt = arg[1];
       }
     else{
 	Error_InvalidRegister();                                         //return invalid registor error
@@ -440,14 +440,14 @@ while (p != NULL){            //loop through until done
 	
 
     if((arg[2] <= 31) && (arg[2] >= 0)){
-	newInst->rs = arg[2];
+	newInst.rs = arg[2];
     }
     else{
 	Error_InvalidRegister();                                   //return invalid registor error
     }
 
     if((arg[0]==6) && (arg[3] < 65535)){                       //if opcode is addi
-	newInst->Imm = arg[3];
+	newInst.Imm = arg[3];
     }
     else{
 	Error_ImmediateField();                                //return immediate field too big
@@ -456,7 +456,7 @@ while (p != NULL){            //loop through until done
     if(arg[0]==7){                                     //if it's beq also check memory misalignment
      if((arg[3]%4)==0){	
       if(arg[3] < 65535){
-		newInst->Imm = arg[3];
+		newInst.Imm = arg[3];
 	}
 	else{
 		Error_ImmediateField();                //return too large immediate field
@@ -472,13 +472,13 @@ while (p != NULL){            //loop through until done
     Error_IllegalOpcode();              //return illegal opcode error because it's not any of the valid ones
   }
   //*/
-printf("Opcode: %d\n", newInst->opcode);
-printf("rs: %d\n", newInst->rs);
-printf("rd: %d\n", newInst->rd);
-printf("rt: %d\n", newInst->rt);
-printf("Imm: %d\n", newInst->Imm);
+printf("Opcode: %d\n", newInst.opcode);
+printf("rs: %d\n", newInst.rs);
+printf("rd: %d\n", newInst.rd);
+printf("rt: %d\n", newInst.rt);
+printf("Imm: %d\n", newInst.Imm);
 
-//return newInst;
+return newInst;
 }
 
 
