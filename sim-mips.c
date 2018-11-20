@@ -632,7 +632,7 @@ void EX(){
 			EXcount++;
 		}
 		else if(in.opcode == 7){  //bq
-			if(in.rs == in.rs) pgm_c += in.Imm;
+			if(in.rs == in.rt) pgm_c += 4*in.Imm;
 			CycleCount = n;
 			branchUnresolved = 0;
 			EXcount++;
@@ -650,7 +650,7 @@ void EX(){
 		}
 	}
 	else if(CycleCount == 1){
-		if((EXout.opcode == 5) || (EXout.opcode == 6)){
+		if((EXout.opcode == 5) || (EXout.opcode == 4)){
 			if(EXMEMLatch.opcode == 0){
 				EXMEMLatch = EXout;
 			  EXcount++;
