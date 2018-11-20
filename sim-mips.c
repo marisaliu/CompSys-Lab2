@@ -750,7 +750,7 @@ void WB(){
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-char test[] = "beq 31,, 8)             (8";
+//char test[] = "beq 31,, 8)             (8";
 //char *t = "beq 31 8 8";
 //regNumberConverter(t);
 //parser(regNumberConverter(progScanner(test)));
@@ -802,7 +802,7 @@ char test[] = "beq 31,, 8)             (8";
   long mips_reg[REG_NUM];
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
-  
+  halt = 0;
 	rawHaz[32] = 0;
 	reg[32] = 0; 
   DMem = (int *)malloc(500 * sizeof(int));
@@ -857,24 +857,22 @@ char test[] = "beq 31,, 8)             (8";
   }
 
 	//start your code from here
-  char *traceEntry1;
+  char *traceEntry;
   //FILE *ifp;
 
-  traceEntry1 = malloc(200*sizeof(char));
+  traceEntry = malloc(200*sizeof(char));
   //ifp = fopen("./program.txt", "r");
  
-
-  char traceEntry[100];
   char *hs = "haltSimulation\n";
 
 	int instIndex = 0;
-  fgets(traceEntry1, 100, input);                 //get first line
-  while(strcmp(traceEntry1, hs) != 0){                  //if it doesn't reach haltSimulation
-    printf("String input is %s \n", traceEntry1);    
+  fgets(traceEntry, 100, input);                 //get first line
+  while(strcmp(traceEntry, hs) != 0){                  //if it doesn't reach haltSimulation
+    printf("String input is %s \n", traceEntry);    
 		//progscannner
 		//regnumberconverter  
-		instMem[instIndex++] = parser(traceEntry1);
-    fgets(traceEntry1, 100, input);
+		instMem[instIndex++] = parser(traceEntry);
+    fgets(traceEntry, 100, input);
   }
 	struct inst finalInst;
 	finalInst.opcode = 8;
