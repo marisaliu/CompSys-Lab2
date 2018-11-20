@@ -40,7 +40,7 @@ struct inst
   struct inst EXout;
   struct inst MEMout;
   int *DMem;
-  int *reg; //what is in each register
+  int reg[32]; //what is in each register
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -49,8 +49,8 @@ struct inst
   int WBcount; 
   int halt;
   int mode; 
-	int c,m,n;
-	int pgm_c;
+  int c,m,n;
+  int pgm_c;
   
  
 ////////////Enumeration type describing opcodes////////////
@@ -290,7 +290,12 @@ exit(1);
 //////////////////////////////////////////////////////////////////////////////////////
 
 struct inst parser(char *line){
-  struct inst *newInst;
+  struct inst newInst;
+  newInst.opcode=0;
+  newInst.rs=0;
+  newInst.rd=0;
+  newInst.rt=0;
+  newInst.Imm=0;
   char *p = malloc(100*sizeof(char));                //store each section after parse
   //char *instrname = malloc(4 * sizeof(char));         //name of instruction
   int arg[4];             //integer array of argument values
@@ -298,7 +303,7 @@ struct inst parser(char *line){
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
 while (p != NULL){            //loop through until done
-  printf("p is: %s \n", p);  
+  //printf("p is: %s \n", p);  
   if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
       arg[0] = 1;                       //add is 1
     }
@@ -322,23 +327,41 @@ while (p != NULL){            //loop through until done
     }
     else{                          //convert p to integer and put it in arg array
       int ll = strlen(p);             //get length of argument
-      int isD = 0, i;   
+      int isD = 0, i, nindex;   
       for(i=0; i < ll; i++){
 	//printf("%c", p[i]);
-	if(isdigit(p[i])){
+	if(p[i] == '\n') {
+	  isD=3;
+	  nindex = i;
+	}
+	  else if(isdigit(p[i])){
 	  	  isD = 1;}                   //check if each character is a digit
 	else
 	  isD = 0;
        }
 	
-    printf("isD: %d \n", isD);  
-      if(isD == 1){        //check that each argument is a number, if not return error
-        if(ll == 1){
-	  arg[a] = p[0] - '0';
-	}
-	else if(ll <= 5){           //arugment is less than 5 characters (65535 is 5 characters)
-        arg[a] = atoi(p);
-	}
+    //printf("isD: %d \n", isD);  
+    if(isD == 3){                     //if there is a \n
+	if(ll <= 5){	
+      char withoutn[ll-1];
+	int j;
+	  for(j=0;j < (ll-1);j++){
+	  withoutn[j] = p[j];
+	  }
+	  
+	  arg[a] = atoi(withoutn);
+        }
+	else{
+	Error_ImmediateField();
+        }
+    }
+    else if(isD == 1){        //check that each argument is a number, if not return error
+          if(ll == 1){
+	    arg[a] = p[0] - '0';
+	  }
+	  else if(ll <= 5){           //arugment is less than 5 characters (65535 is 5 characters)
+          arg[a] = atoi(p);
+	  }
 	else{
 		Error_ImmediateField();                //throw immediate field error 
 	}
@@ -354,7 +377,7 @@ while (p != NULL){            //loop through until done
     //printf("%s", p);
     c++;         
   }
-    printf("%d \n", arg[0]);
+  //  printf("%d \n", arg[0]);
    //////////////actually check which instructions it is and put the arguments in the right variables in the inst
    //if(index 0 is ADD, SUB, MUL) --> contains opcode, rs, rt, rd, funct (r)
 //printf("%d",arg[0]);
@@ -364,10 +387,10 @@ while (p != NULL){            //loop through until done
     {
 
 	  if((arg[i] <= 31) && (arg[i] >= 0)){
-	    newInst->opcode = arg[0];
-	    newInst->rs = arg[2];
-	    newInst->rt = arg[3];
-	    newInst->rd = arg[1];
+	    newInst.opcode = arg[0];
+	    newInst.rs = arg[2];
+	    newInst.rt = arg[3];
+	    newInst.rd = arg[1];
 	  }
 	  else{
 		Error_InvalidRegister();            //throw invalid register error
@@ -376,9 +399,9 @@ while (p != NULL){            //loop through until done
 
   }
   else if((arg[0]==4) || (arg[0]==5)){              // if opcode is "lw" or "sw", respectively
-  newInst->opcode=arg[0];
+  newInst.opcode=arg[0];
     if((arg[1] <= 31) && (arg[1] >= 0)){
-	newInst->rt = arg[1];
+	newInst.rt = arg[1];
       }
     else{
 	Error_InvalidRegister();           //return invalid registor error
@@ -386,7 +409,7 @@ while (p != NULL){            //loop through until done
 	
 
     if((arg[3] <= 31) && (arg[3] >= 0)){
-	newInst->rs = arg[3];
+	newInst.rs = arg[3];
     }
     else{
 	Error_InvalidRegister();             //return invalid registor error
@@ -395,7 +418,7 @@ while (p != NULL){            //loop through until done
 
     if((arg[2] <= 65535) && (arg[2] >= 0)){
 	if((arg[2] % 4) == 0){
-	  newInst->Imm = arg[2];
+	  newInst.Imm = arg[2];
         }
         else{
 	  Error_MemoryMisalignment();           //return error memory misalignment error
@@ -406,10 +429,10 @@ while (p != NULL){            //loop through until done
     }
   }
   else if ((arg[0]==6) || (arg[0]==7)){                           // if opcode is "addi" or "beq" respectively
-    newInst->opcode=arg[0];
+    newInst.opcode=arg[0];
 
     if((arg[1] <= 31) && (arg[1] >= 0)){
-	newInst->rt = arg[1];
+	newInst.rt = arg[1];
       }
     else{
 	Error_InvalidRegister();                                         //return invalid registor error
@@ -417,14 +440,14 @@ while (p != NULL){            //loop through until done
 	
 
     if((arg[2] <= 31) && (arg[2] >= 0)){
-	newInst->rs = arg[2];
+	newInst.rs = arg[2];
     }
     else{
 	Error_InvalidRegister();                                   //return invalid registor error
     }
 
     if((arg[0]==6) && (arg[3] < 65535)){                       //if opcode is addi
-	newInst->Imm = arg[3];
+	newInst.Imm = arg[3];
     }
     else{
 	Error_ImmediateField();                                //return immediate field too big
@@ -433,7 +456,7 @@ while (p != NULL){            //loop through until done
     if(arg[0]==7){                                     //if it's beq also check memory misalignment
      if((arg[3]%4)==0){	
       if(arg[3] < 65535){
-		newInst->Imm = arg[3];
+		newInst.Imm = arg[3];
 	}
 	else{
 		Error_ImmediateField();                //return too large immediate field
@@ -449,12 +472,13 @@ while (p != NULL){            //loop through until done
     Error_IllegalOpcode();              //return illegal opcode error because it's not any of the valid ones
   }
   //*/
-printf("Opcode: %d\n", newInst->opcode);
-printf("rs: %d\n", newInst->rs);
-printf("rd: %d\n", newInst->rd);
-printf("rt: %d\n", newInst->rt);
-printf("Imm: %d\n", newInst->Imm);
+printf("Opcode: %d\n", newInst.opcode);
+printf("rs: %d\n", newInst.rs);
+printf("rd: %d\n", newInst.rd);
+printf("rt: %d\n", newInst.rt);
+printf("Imm: %d\n", newInst.Imm);
 
+return newInst;
 }
 
 
@@ -466,7 +490,6 @@ printf("Imm: %d\n", newInst->Imm);
 //If there is a branch that is unresolved finish resolving the branch before continuing
 void IF(){
 static int CycleCount = 0;
-//printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
 
    if(CycleCount == 0) CycleCount = c;
 	if(CycleCount == 1){
@@ -477,19 +500,13 @@ static int CycleCount = 0;
 			}
 			pgm_c +=4;
 			IFcount++;
-			//CycleCount--;
-//	printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
-
 		}
 	}
-	//else{
-		CycleCount--;
-//printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+	CycleCount--;
 
-	//}
-printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
-printf("\ninstMem \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
-printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
+//printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+//printf("\ninstMem \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
+//printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
 
 }
 
@@ -501,18 +518,22 @@ printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.
 //If there is a raw hazard do nothing 
 //If there is no raw hazard continue and set the appropriate raw hazard 
 //flag for the register that is being calculated 
+//Put in the values that are in the registers and set them equal to the 
+//output instructions rt and rs (depending on instruction opcode)
 //Check that the IDEXLatch is empty and if it is put the instruction 
 //into the latch, and set the IFIDLatch to empty
 
 void ID(){
 	struct inst in = IFIDLatch;
 	struct inst out = in;
-  if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
-    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			rawHaz[in.rd] = 1;  
+printf("\n in opcode: %d", in.opcode);
+	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
+    
+		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			rawHaz[in.rd] = 1; 		
 			out.rt = reg[in.rt];
 			out.rs = reg[in.rs];
-			if(IDEXLatch.opcode = 0){                                  
+			if(IDEXLatch.opcode == 0){                                  
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
 				IDcount++;
@@ -522,19 +543,19 @@ void ID(){
   else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
     if(!rawHaz[in.rs]){
 			rawHaz[in.rt] = 1;
-			out.rt = reg[in.rt];
-		  if(IDEXLatch.opcode = 0){
+			out.rs = reg[in.rs];
+		  if(IDEXLatch.opcode == 0){
 				IFIDLatch.opcode = 0;
-			  IDEXLatch = out;
-			  IDcount++;
+			IDEXLatch = out;
+			IDcount++;
 			} 
 		} 
   }
   else if(in.opcode == 5){          //SW
      if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 			rawHaz[in.rt] = 1;
-			out.rt = reg[in.rt];
-			if(IDEXLatch.opcode = 0){                                  
+			out.rs = reg[in.rs];
+			if(IDEXLatch.opcode == 0){                                  
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
 				IDcount++;
@@ -545,7 +566,9 @@ void ID(){
   else if(in.opcode == 7){ //beq	
      if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 			branchUnresolved = 1;                                      
-			if(IDEXLatch.opcode = 0){                                  
+			out.rs = reg[in.rs];
+			out.rt = reg[in.rt];
+			if(IDEXLatch.opcode == 0){                                  
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
 				IDcount++;
@@ -554,9 +577,11 @@ void ID(){
   }
   else{
       //Return error // assertion
+	 if(in.opcode != 0){
 	 printf("ID: OPCODE ERROR\n");
 	 assert(in.opcode<8 || in.opcode>0);
 	 exit(0);
+	 }
   }
 }
 
@@ -756,7 +781,13 @@ char test[] = "beq 31,, 8)             (8";
   long mips_reg[REG_NUM];
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
-  //define your own counter for the usage of each pipeline stage here
+  
+	rawHaz[32] = 0;
+	reg[32] = 0; 
+  DMem = (int *)malloc(500 * sizeof(int));
+  int dataAddress=0;
+
+ //define your own counter for the usage of each pipeline stage here
 	
   int test_counter=0;
   FILE *input=NULL;
@@ -808,10 +839,6 @@ char test[] = "beq 31,, 8)             (8";
   //int *instructionMemory;
   //instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
   //int instructionAddress=0;
-  int *dataMemory;
-  dataMemory = (int *)malloc(500 * sizeof(int));
-  int dataAddress=0;
-
   char *traceEntry1;
   //FILE *ifp;
 
@@ -820,14 +847,19 @@ char test[] = "beq 31,, 8)             (8";
  
 
   char traceEntry[100];
-  char *hs="haltSimulation";
+  char *hs="haltSimulation\n";
   int instIndex = 0;
 /*  while(strcmp(traceEntry1, hs) != 0){
     fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
   //  strcpy(traceEntry, traceEntry1);
+
+  fgets(traceEntry1, 100, input);                 //get first line
+  while(strcmp(traceEntry1, hs) != 0){                  //if it doesn't reach haltSimulation
+    printf("String input is %s \n", traceEntry1);    
+    //  strcpy(traceEntry, traceEntry1);
     instMem[instIndex++] = parser(traceEntry1);
-    //progScanner(traceEntry);
+    fgets(traceEntry1, 100, input);
   }
   fclose(input);
 */
