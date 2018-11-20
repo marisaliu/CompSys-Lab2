@@ -846,9 +846,6 @@ char test[] = "beq 31,, 8)             (8";
   }
 
 	//start your code from here
-  //int *instructionMemory;
-  //instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
-  //int instructionAddress=0;
   char *traceEntry1;
   //FILE *ifp;
 
@@ -857,23 +854,31 @@ char test[] = "beq 31,, 8)             (8";
  
 
   char traceEntry[100];
-  char *hs="haltSimulation\n";
-  int instIndex = 0;
+  char *hs = "haltSimulation\n";
 
-/*  while(strcmp(traceEntry1, hs) != 0){
-    fgets(traceEntry1, 100, input);
-    printf("String input is %s \n", traceEntry1);
-  //  strcpy(traceEntry, traceEntry1);
-
+	int instIndex = 0;
   fgets(traceEntry1, 100, input);                 //get first line
   while(strcmp(traceEntry1, hs) != 0){                  //if it doesn't reach haltSimulation
     printf("String input is %s \n", traceEntry1);    
-    //  strcpy(traceEntry, traceEntry1);
-    instMem[instIndex++] = parser(traceEntry1);
+		//progscannner
+		//regnumberconverter  
+		instMem[instIndex++] = parser(traceEntry1);
     fgets(traceEntry1, 100, input);
   }
+	struct inst finalInst;
+	finalInst.opcode = 8;
+	instMem[instIndex++] = finalInst;
   fclose(input);
-*/
+ 
+  while(!halt){
+		WB();
+		MEM();
+		EX();
+		ID();
+		IF();
+		sim_cycle++;
+	} 
+
 /*c=3;
 struct inst inst1;
 inst1.opcode = 1;
