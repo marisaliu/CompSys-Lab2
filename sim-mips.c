@@ -674,22 +674,28 @@ void MEM(){
 		struct inst in = EXMEMLatch;
 		MEMout = in;
 		if(in.opcode == 4){  // lw
+			printf("lw - in.rs: %d\n", in.rs);
 			MEMout.rs = DMem[in.rs];
 			CycleCount = c;
 		}
 		else if(in.opcode == 5){  //sw
-			DMem[in.rt] = MEMout.rs;
+			printf("sw - in.rs: %d\n",in.rs);
+			DMem[reg[in.rt]] = in.rs;
+			printf("DMem: %d \n",DMem[reg[in.rt]]);
 			CycleCount = c;
 		}
 		else{
 		//invalid opcode
-		  printf("MEM: INVALID OPCODE\n");
-		  assert(in.opcode == 4 || in.opcode == 5);
-		  exit(0);
+			if(in.opcode != 0){
+			  printf("MEM: INVALID OPCODE\n");
+				assert(in.opcode == 4 || in.opcode == 5);
+				exit(0);
+			}	
 		}
 	}
-	else if(CycleCount == 1){
+	if(CycleCount == 1){
 		MEMWBLatch = MEMout;
+		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
 		EXMEMLatch.opcode = 0;
 		CycleCount--;
 	}
@@ -853,6 +859,7 @@ char test[] = "beq 31,, 8)             (8";
   char traceEntry[100];
   char *hs="haltSimulation\n";
   int instIndex = 0;
+
 /*  while(strcmp(traceEntry1, hs) != 0){
     fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
@@ -897,6 +904,7 @@ o--;
 }
 
 */
+
 /*
   //output statistics in batch mode
   if(sim_mode==0){
