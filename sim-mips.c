@@ -291,6 +291,11 @@ exit(1);
 
 struct inst parser(char *line){
   struct inst *newInst;
+  newInst->opcode=0;
+  newInst->rs=0;
+  newInst->rd=0;
+  newInst->rt=0;
+  newInst->Imm=0;
   char *p = malloc(100*sizeof(char));                //store each section after parse
   //char *instrname = malloc(4 * sizeof(char));         //name of instruction
   int arg[4];             //integer array of argument values
@@ -298,7 +303,7 @@ struct inst parser(char *line){
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
 while (p != NULL){            //loop through until done
-  printf("p is: %s \n", p);  
+  //printf("p is: %s \n", p);  
   if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
       arg[0] = 1;                       //add is 1
     }
@@ -322,23 +327,41 @@ while (p != NULL){            //loop through until done
     }
     else{                          //convert p to integer and put it in arg array
       int ll = strlen(p);             //get length of argument
-      int isD = 0, i;   
+      int isD = 0, i, nindex;   
       for(i=0; i < ll; i++){
 	//printf("%c", p[i]);
-	if(isdigit(p[i])){
+	if(p[i] == '\n') {
+	  isD=3;
+	  nindex = i;
+	}
+	  else if(isdigit(p[i])){
 	  	  isD = 1;}                   //check if each character is a digit
 	else
 	  isD = 0;
        }
 	
-    printf("isD: %d \n", isD);  
-      if(isD == 1){        //check that each argument is a number, if not return error
-        if(ll == 1){
-	  arg[a] = p[0] - '0';
-	}
-	else if(ll <= 5){           //arugment is less than 5 characters (65535 is 5 characters)
-        arg[a] = atoi(p);
-	}
+    //printf("isD: %d \n", isD);  
+    if(isD == 3){                     //if there is a \n
+	if(ll <= 5){	
+      char withoutn[ll-1];
+	int j;
+	  for(j=0;j < (ll-1);j++){
+	  withoutn[j] = p[j];
+	  }
+	  
+	  arg[a] = atoi(withoutn);
+        }
+	else{
+	Error_ImmediateField();
+        }
+    }
+    else if(isD == 1){        //check that each argument is a number, if not return error
+          if(ll == 1){
+	    arg[a] = p[0] - '0';
+	  }
+	  else if(ll <= 5){           //arugment is less than 5 characters (65535 is 5 characters)
+          arg[a] = atoi(p);
+	  }
 	else{
 		Error_ImmediateField();                //throw immediate field error 
 	}
@@ -354,7 +377,7 @@ while (p != NULL){            //loop through until done
     //printf("%s", p);
     c++;         
   }
-    printf("%d \n", arg[0]);
+  //  printf("%d \n", arg[0]);
    //////////////actually check which instructions it is and put the arguments in the right variables in the inst
    //if(index 0 is ADD, SUB, MUL) --> contains opcode, rs, rt, rd, funct (r)
 //printf("%d",arg[0]);
@@ -455,6 +478,7 @@ printf("rd: %d\n", newInst->rd);
 printf("rt: %d\n", newInst->rt);
 printf("Imm: %d\n", newInst->Imm);
 
+//return newInst;
 }
 
 
@@ -811,14 +835,15 @@ char test[] = "beq 31,, 8)             (8";
  
 
   char traceEntry[100];
-  char *hs="haltSimulation";
+  char *hs="haltSimulation\n";
   
-  while(strcmp(traceEntry1, hs) != 0){
-    fgets(traceEntry1, 100, input);
+  fgets(traceEntry1, 100, input);
+  while(strcmp(traceEntry1, hs) != 0){ 
     printf("String input is %s \n", traceEntry1);
   //  strcpy(traceEntry, traceEntry1); 
     parser(traceEntry1);
-    //progScanner(traceEntry);
+   //progScanner(traceEntry);
+  fgets(traceEntry1,100,input);
   }
   fclose(input);
 
