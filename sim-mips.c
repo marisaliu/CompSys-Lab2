@@ -465,9 +465,11 @@ printf("Imm: %d\n", newInst->Imm);
 //Fetches instruction from instruction memory
 //If there is a branch that is unresolved finish resolving the branch before continuing
 void IF(){
-	static int CycleCount = 0;
-	if(CycleCount == 0) CycleCount = c;
-	else if(CycleCount = 1){
+static int CycleCount = 0;
+//printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+
+   if(CycleCount == 0) CycleCount = c;
+	if(CycleCount == 1){
 		if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
 			IFIDLatch = instMem[pgm_c/4];          
 			if(IFIDLatch.opcode == 7){    
@@ -475,12 +477,19 @@ void IF(){
 			}
 			pgm_c +=4;
 			IFcount++;
-			CycleCount--;
+			//CycleCount--;
+//	printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+
 		}
 	}
-	else{
+	//else{
 		CycleCount--;
-	}
+//printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+
+	//}
+printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+printf("\ninstMem \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
+printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
 
 }
 
@@ -742,7 +751,7 @@ char test[] = "beq 31,, 8)             (8";
 	branchUnresolved = 0;
 
   int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
-  int c,m,n;
+  //  int c,m,n;
   int i;//for loop counter
   long mips_reg[REG_NUM];
   long pgm_c=0;//program counter
@@ -813,7 +822,7 @@ char test[] = "beq 31,, 8)             (8";
   char traceEntry[100];
   char *hs="haltSimulation";
   int instIndex = 0;
-  while(strcmp(traceEntry1, hs) != 0){
+/*  while(strcmp(traceEntry1, hs) != 0){
     fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
   //  strcpy(traceEntry, traceEntry1);
@@ -821,8 +830,28 @@ char test[] = "beq 31,, 8)             (8";
     //progScanner(traceEntry);
   }
   fclose(input);
-
-
+*/
+c=3;
+struct inst inst1;
+inst1.opcode = 1;
+inst1.rs = 7;
+inst1.rt = 8;
+inst1.rd = 9;
+inst1.Imm = 0;
+struct inst inst2;
+inst2.opcode = 2;
+inst2.rs = 10;
+inst2.rt = 11;
+inst2.rd = 12;
+inst2.Imm = 0;
+instMem[0] = inst1;
+instMem[1] = inst2;
+int o = 7;
+while(o>0){
+ID();
+IF();
+o--;
+}
 
 
 /*
