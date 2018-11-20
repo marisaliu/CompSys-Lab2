@@ -40,7 +40,7 @@ struct inst
   struct inst EXout;
   struct inst MEMout;
   int *DMem;
-  int *reg; //what is in each register
+  int reg[32]; //what is in each register
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -492,6 +492,8 @@ void IF(){
 //If there is a raw hazard do nothing 
 //If there is no raw hazard continue and set the appropriate raw hazard 
 //flag for the register that is being calculated 
+//Put in the values that are in the registers and set them equal to the 
+//output instructions rt and rs (depending on instruction opcode)
 //Check that the IDEXLatch is empty and if it is put the instruction 
 //into the latch, and set the IFIDLatch to empty
 
@@ -499,11 +501,12 @@ void ID(){
 	struct inst in = IFIDLatch;
 	struct inst out = in;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
-    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			rawHaz[in.rd] = 1;  
+    
+		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			rawHaz[in.rd] = 1; 		
 			out.rt = reg[in.rt];
 			out.rs = reg[in.rs];
-			if(IDEXLatch.opcode = 0){                                  
+			if(IDEXLatch.opcode == 0){                                  
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
 				IDcount++;
@@ -513,19 +516,19 @@ void ID(){
   else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
     if(!rawHaz[in.rs]){
 			rawHaz[in.rt] = 1;
-			out.rt = reg[in.rt];
-		  if(IDEXLatch.opcode = 0){
+			out.rs = reg[in.rs];
+		  if(IDEXLatch.opcode == 0){
 				IFIDLatch.opcode = 0;
-			  IDEXLatch = out;
-			  IDcount++;
+			IDEXLatch = out;
+			IDcount++;
 			} 
 		} 
   }
   else if(in.opcode == 5){          //SW
      if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 			rawHaz[in.rt] = 1;
-			out.rt = reg[in.rt];
-			if(IDEXLatch.opcode = 0){                                  
+			out.rs = reg[in.rs];
+			if(IDEXLatch.opcode == 0){                                  
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
 				IDcount++;
@@ -536,7 +539,9 @@ void ID(){
   else if(in.opcode == 7){ //beq	
      if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 			branchUnresolved = 1;                                      
-			if(IDEXLatch.opcode = 0){                                  
+			out.rs = reg[in.rs];
+			out.rt = reg[in.rt];
+			if(IDEXLatch.opcode == 0){                                  
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
 				IDcount++;
@@ -747,7 +752,13 @@ char test[] = "beq 31,, 8)             (8";
   long mips_reg[REG_NUM];
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
-  //define your own counter for the usage of each pipeline stage here
+  
+	rawHaz[32] = 0;
+	reg[32] = 0; 
+  DMem = (int *)malloc(500 * sizeof(int));
+  int dataAddress=0;
+
+ //define your own counter for the usage of each pipeline stage here
 	
   int test_counter=0;
   FILE *input=NULL;
@@ -799,10 +810,6 @@ char test[] = "beq 31,, 8)             (8";
   //int *instructionMemory;
   //instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
   //int instructionAddress=0;
-  int *dataMemory;
-  dataMemory = (int *)malloc(500 * sizeof(int));
-  int dataAddress=0;
-
   char *traceEntry1;
   //FILE *ifp;
 
@@ -816,7 +823,10 @@ char test[] = "beq 31,, 8)             (8";
   while(strcmp(traceEntry1, hs) != 0){
     fgets(traceEntry1, 100, input);
     printf("String input is %s \n", traceEntry1);
-  //  strcpy(traceEntry, traceEntry1);
+  
+    
+    
+    //  strcpy(traceEntry, traceEntry1);
     instMem[instIndex++] = parser(traceEntry1);
     //progScanner(traceEntry);
   }
