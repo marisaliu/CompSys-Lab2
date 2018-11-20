@@ -710,17 +710,21 @@ void WB(){
     reg[in.rd] = in.rs;
 		rawHaz[in.rd] = 0;
 		WBcount++;
+//		printf("reg %d: %d\n", in.rd, reg[in.rd]);
   }
 	else if((in.opcode == 5) || (in.opcode == 6)){   //addi,sw
 		reg[in.rt] = in.rs;
 		rawHaz[in.rt] = 0;
 		WBcount++;
+//		printf("reg %d: %d\n", in.rt, reg[in.rt]);
 	}
   else{
       //Return error // assertion
-    printf("WB: OPCODE ERROR\n");
-	 assert(in.opcode<7 || in.opcode>0);
-	 exit(0);
+    if(in.opcode != 0){
+	   printf("WB: OPCODE ERROR\n");
+	   assert(in.opcode<7 || in.opcode>0);
+	   exit(0);
+	 }
   }
 }
 
@@ -863,7 +867,7 @@ char test[] = "beq 31,, 8)             (8";
   }
   fclose(input);
 */
-c=3;
+/*c=3;
 struct inst inst1;
 inst1.opcode = 1;
 inst1.rs = 7;
@@ -871,21 +875,28 @@ inst1.rt = 8;
 inst1.rd = 9;
 inst1.Imm = 0;
 struct inst inst2;
-inst2.opcode = 2;
+inst2.opcode = 5;
 inst2.rs = 10;
 inst2.rt = 11;
-inst2.rd = 12;
-inst2.Imm = 0;
+inst2.rd = 0;
+inst2.Imm = 8;
 instMem[0] = inst1;
 instMem[1] = inst2;
+reg[inst1.rs] = 1;
+reg[inst1.rt] = 2;
+reg[inst1.rd] = 3;
+reg[inst2.rs] = 4;
+reg[inst2.rt] = 12;
 int o = 7;
+MEMWBLatch = inst2;
 while(o>0){
-ID();
-IF();
+WB();
+//ID();
+//IF();
 o--;
 }
 
-
+*/
 /*
   //output statistics in batch mode
   if(sim_mode==0){
