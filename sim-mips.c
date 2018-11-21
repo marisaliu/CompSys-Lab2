@@ -51,7 +51,7 @@ struct inst
   int stopReceive;
   int mode; 
   int c,m,n;
-  int pgm_c;
+  long pgm_c;
 
  
 ////////////Enumeration type describing opcodes////////////
@@ -824,7 +824,7 @@ void main (int argc, char *argv[]){
 	branchUnresolved = 0;
   int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
   int i;//for loop counter
-  long pgm_c=0;//program counter
+  pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
   stopReceive = halt = 0;//flags for haltSimulation
   DMem = (int *)malloc(500 * sizeof(int));
