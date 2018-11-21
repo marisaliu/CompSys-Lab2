@@ -51,7 +51,6 @@ struct inst
   int mode; 
   int c,m,n;
   int pgm_c;
-  int EXfinish;  
  
 ////////////Enumeration type describing opcodes////////////
 //enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
@@ -489,9 +488,10 @@ return newInst;
 //Fetches instruction from instruction memory
 //If there is a branch that is unresolved finish resolving the branch before continuing
 void IF(){
-	static int CycleCount = 0;
-	if(CycleCount == 0) CycleCount = c;
-	else if(CycleCount = 1){
+static int CycleCount = 0;
+
+   if(CycleCount == 0) CycleCount = c;
+	if(CycleCount == 1){
 		if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
 			IFIDLatch = instMem[pgm_c/4];          
 			if(IFIDLatch.opcode == 7){    
@@ -499,12 +499,13 @@ void IF(){
 			}
 			pgm_c +=4;
 			IFcount++;
-			CycleCount--;
 		}
 	}
-	else{
-		CycleCount--;
-	}
+	CycleCount--;
+
+//printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+//printf("\ninstMem \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
+//printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
 
 }
 
@@ -524,7 +525,8 @@ void IF(){
 void ID(){
 	struct inst in = IFIDLatch;
 	struct inst out = in;
-  if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
+printf("\n in opcode: %d", in.opcode);
+	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
     
 		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 			rawHaz[in.rd] = 1; 		
@@ -573,10 +575,14 @@ void ID(){
 		}
   }
   else{
+	 //halt simulation
+	 if(in.opcode == 8) halt = 1;
       //Return error // assertion
+	 if(in.opcode != 0){
 	 printf("ID: OPCODE ERROR\n");
 	 assert(in.opcode<8 || in.opcode>0);
 	 exit(0);
+	 }
   }
 }
 
@@ -626,27 +632,34 @@ void EX(){
 			EXcount++;
 		}
 		else if(in.opcode == 7){  //bq
-		  	printf("pgm c: %d \n", pgm_c);
-			if(in.rs == in.rt) pgm_c += in.Imm;
+		  	//printf("pgm c: %d \n", pgm_c);
+			if(in.rs == in.rt) pgm_c += 4*in.Imm;
+
 			CycleCount = n;
 			branchUnresolved = 0;
 			EXcount++;
 		}
 		else{
       //Return error // assertion
-		  printf("EX: OPCODE ERROR\n");
+		  if(in.opcode == 8){
+				halt = 1;
+			}
+			else if(in.opcode != 0){
+			printf("EX: OPCODE ERROR\n");
 		  assert(in.opcode<8 && in.opcode>0);
 		  exit(0);
+			}	
 		}
 	}
 	else if(CycleCount == 1){
-		if((EXout.opcode == 4) || (EXout.opcode == 5)){
+		if((EXout.opcode == 5) || (EXout.opcode == 4)){
+
 			if(EXMEMLatch.opcode == 0){
 				EXMEMLatch = EXout;
 			  EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
-				  EXfinish=1;
+
 			} 
 		} 
 	  else{ 
@@ -655,7 +668,7 @@ void EX(){
 				EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
-				EXfinish=1;
+
 			} 
               } 
 	} 
@@ -663,7 +676,7 @@ void EX(){
 		CycleCount--;
 	}
 ////////////////////////
-printf("pgmc at end is: %d \n", pgm_c);
+//printf("pgmc at end is: %d \n", pgm_c);
 
 }
 
@@ -676,22 +689,30 @@ void MEM(){
 		struct inst in = EXMEMLatch;
 		MEMout = in;
 		if(in.opcode == 4){  // lw
+			printf("lw - in.rs: %d\n", in.rs);
 			MEMout.rs = DMem[in.rs];
 			CycleCount = c;
 		}
 		else if(in.opcode == 5){  //sw
-			DMem[in.rt] = MEMout.rs;
+			printf("sw - in.rs: %d\n",in.rs);
+			DMem[reg[in.rt]] = in.rs;
+			printf("DMem: %d \n",DMem[reg[in.rt]]);
 			CycleCount = c;
 		}
 		else{
-		//invalid opcode
-		  printf("MEM: INVALID OPCODE\n");
-		  assert(in.opcode == 4 || in.opcode == 5);
-		  exit(0);
+		  //halt simulation
+		  if(in.opcode == 8) halt = 1;
+		  //invalid opcode
+		  if(in.opcode != 0){
+			 printf("MEM: INVALID OPCODE\n");
+			 assert(in.opcode == 4 || in.opcode == 5);
+			 exit(0);
+		  }	
 		}
 	}
-	else if(CycleCount == 1){
+	if(CycleCount == 1){
 		MEMWBLatch = MEMout;
+		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
 		EXMEMLatch.opcode = 0;
 		CycleCount--;
 	}
@@ -712,17 +733,23 @@ void WB(){
     reg[in.rd] = in.rs;
 		rawHaz[in.rd] = 0;
 		WBcount++;
+//		printf("reg %d: %d\n", in.rd, reg[in.rd]);
   }
 	else if((in.opcode == 5) || (in.opcode == 6)){   //addi,sw
 		reg[in.rt] = in.rs;
 		rawHaz[in.rt] = 0;
 		WBcount++;
+//		printf("reg %d: %d\n", in.rt, reg[in.rt]);
 	}
   else{
-      //Return error // assertion
-    printf("WB: OPCODE ERROR\n");
-	 assert(in.opcode<7 || in.opcode>0);
-	 exit(0);
+    //halt simulation
+    if(in.opcode == 8) halt = 1;
+	 //Return error // assertion
+    if(in.opcode != 0){
+	   printf("WB: OPCODE ERROR\n");
+	   assert(in.opcode<7 || in.opcode>0);
+	   exit(0);
+	 }
   }
 }
 
@@ -731,7 +758,7 @@ void WB(){
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-char test[] = "beq 31,, 8)             (8";
+//char test[] = "beq 31,, 8)             (8";
 //char *t = "beq 31 8 8";
 //regNumberConverter(t);
 //parser(regNumberConverter(progScanner(test)));
@@ -778,12 +805,13 @@ char test[] = "beq 31,, 8)             (8";
 	branchUnresolved = 0;
 
   int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
-//  int c,m,n;
+
   int i;//for loop counter
   long mips_reg[REG_NUM];
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
-  EXfinish = 0;
+
+  halt = 0;
 	rawHaz[32] = 0;
 	reg[32] = 0; 
   DMem = (int *)malloc(500 * sizeof(int));
@@ -838,30 +866,67 @@ char test[] = "beq 31,, 8)             (8";
   }
 
 	//start your code from here
-  //int *instructionMemory;
-  //instructionMemory = (int *)malloc(500 * sizeof(int));                //2000 bytes / 4 byte ints = 500 ints
-  //int instructionAddress=0;
-  char *traceEntry1;
+  char *traceEntry;
   //FILE *ifp;
 
-  traceEntry1 = malloc(200*sizeof(char));
+  traceEntry = malloc(200*sizeof(char));
   //ifp = fopen("./program.txt", "r");
  
 
-  char traceEntry[100];
   char *hs="haltSimulation\n";
   int instIndex = 0;
 
-
-  fgets(traceEntry1, 100, input);                 //get first line
-  while(strcmp(traceEntry1, hs) != 0){                  //if it doesn't reach haltSimulation
-    printf("String input is %s \n", traceEntry1);    
-    //  strcpy(traceEntry, traceEntry1);
-    //instMem[instIndex++] = parser(traceEntry1);
-    
-    fgets(traceEntry1, 100, input);
+  fgets(traceEntry, 100, input);                 //get first line
+  while(strcmp(traceEntry, hs) != 0){                  //if it doesn't reach haltSimulation
+   printf("String input is %s \n", traceEntry);    
+		//progscannner
+		//regnumberconverter  
+		instMem[instIndex++] = parser(traceEntry);
+    fgets(traceEntry, 100, input);
   }
+	struct inst finalInst;
+	finalInst.opcode = 8;
+	instMem[instIndex++] = finalInst;
   fclose(input);
+ 
+  while(!halt){
+		WB();
+		MEM();
+		EX();
+		ID();
+		IF();
+		sim_cycle++;
+	} 
+
+/*c=3;
+struct inst inst1;
+inst1.opcode = 1;
+inst1.rs = 7;
+inst1.rt = 8;
+inst1.rd = 9;
+inst1.Imm = 0;
+struct inst inst2;
+inst2.opcode = 5;
+inst2.rs = 10;
+inst2.rt = 11;
+inst2.rd = 0;
+inst2.Imm = 8;
+instMem[0] = inst1;
+instMem[1] = inst2;
+reg[inst1.rs] = 1;
+reg[inst1.rt] = 2;
+reg[inst1.rd] = 3;
+reg[inst2.rs] = 4;
+reg[inst2.rt] = 12;
+int o = 7;
+MEMWBLatch = inst2;
+while(o>0){
+WB();
+//ID();
+//IF();
+o--;
+}
+*/
 
 
 
