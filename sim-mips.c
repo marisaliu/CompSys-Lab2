@@ -526,7 +526,7 @@ static int CycleCount = 0;
 void ID(){
 	struct inst in = IFIDLatch;
 	struct inst out = in;
-printf("\n in opcode: %d", in.opcode);
+printf("in opcode: %d\n", in.opcode);
 	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
     
 		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
