@@ -40,7 +40,7 @@ struct inst
   struct inst EXout;
   struct inst MEMout;
   int *DMem;
-  int reg[32]; //what is in each register
+  long reg[32]; //what is in each register
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -758,17 +758,8 @@ void WB(){
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-//char test[] = "beq 31,, 8)             (8";
-//char *t = "beq 31 8 8";
-//regNumberConverter(t);
-//parser(regNumberConverter(progScanner(test)));
-//regNumberConverter(progScanner(test));
-//progScanner(test);
 
-
-//Initialize variables
-	//struct inst instMem[2048/4];    initialized as global
-   //rawHaz = malloc(32*sizeof(int));
+//////////////////////Initialize variables////////////////////////////  
 //	IFIDLatch = {0,0,0,0,0};
 	IFIDLatch.opcode = 0;
 	IFIDLatch.rs = 0;
@@ -803,22 +794,15 @@ void main (int argc, char *argv[]){
 	MEMcount = 0;
 	WBcount = 0;
 	branchUnresolved = 0;
-
   int sim_mode=0;//mode flag, 1 for single-cycle, 0 for batch
-  //  int c,m,n;
   int i;//for loop counter
-  long mips_reg[REG_NUM];
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
-  halt = 0;
-	rawHaz[32] = 0;
-	reg[32] = 0; 
+  halt = 0;     
   DMem = (int *)malloc(500 * sizeof(int));
   int dataAddress=0;
 
- //define your own counter for the usage of each pipeline stage here
-	
-  int test_counter=0;
+	////////////////////////Set cmdline arguements to variables/////////////////////////
   FILE *input=NULL;
   FILE *output=NULL;
   printf("The arguments are:");
@@ -860,19 +844,15 @@ void main (int argc, char *argv[]){
 	//initialize registers and program counter
   if(sim_mode==1){
     for (i=0;i<REG_NUM;i++){
-      mips_reg[i]=0;
+			reg[i]=0;
+			rawHaz[i] = 0;
     }
   }
 
-	//start your code from here
+	//////////////////////Read from input file to instruction memory/////////////////////
   char *traceEntry;
-  //FILE *ifp;
-
-  traceEntry = malloc(200*sizeof(char));
-  //ifp = fopen("./program.txt", "r");
- 
+  traceEntry = malloc(200*sizeof(char)); 
   char *hs = "haltSimulation\n";
-
 	int instIndex = 0;
   fgets(traceEntry, 100, input);                 //get first line
   while(strcmp(traceEntry, hs) != 0){                  //if it doesn't reach haltSimulation
@@ -882,6 +862,8 @@ void main (int argc, char *argv[]){
 		instMem[instIndex++] = parser(traceEntry);
     fgets(traceEntry, 100, input);
   }
+
+///////////////////////Run mips instructions through pipleine///////////////////////////
 	struct inst finalInst;
 	finalInst.opcode = 8;
 	instMem[instIndex++] = finalInst;
@@ -905,47 +887,15 @@ void main (int argc, char *argv[]){
 		}
 	} 
 
-/*c=3;
-struct inst inst1;
-inst1.opcode = 1;
-inst1.rs = 7;
-inst1.rt = 8;
-inst1.rd = 9;
-inst1.Imm = 0;
-struct inst inst2;
-inst2.opcode = 5;
-inst2.rs = 10;
-inst2.rt = 11;
-inst2.rd = 0;
-inst2.Imm = 8;
-instMem[0] = inst1;
-instMem[1] = inst2;
-reg[inst1.rs] = 1;
-reg[inst1.rt] = 2;
-reg[inst1.rd] = 3;
-reg[inst2.rs] = 4;
-reg[inst2.rt] = 12;
-int o = 7;
-MEMWBLatch = inst2;
-while(o>0){
-WB();
-//ID();
-//IF();
-o--;
-}
-
-*/
-
-/*
-  //output statistics in batch mode
+  ///////////////////////output statistics in batch mode/////////////////////////:
   if(sim_mode==0){
     fprintf(output,"program name: %s\n",argv[5]);
-    fprintf(output,"stage utilization: %f  %f  %f  %f  %f \n", ifUtil, idUtil, exUtil, memUtil, wbUtil);
+    fprintf(output,"stage utilization: %f  %f  %f  %f  %f \n", IFcount, IDcount, EXcount, MEMcount, WBcount);
     // add the (double) stage_counter/sim_cycle for each 
     // stage following sequence IF ID EX MEM WB		
     fprintf(output,"register values ");
     for (i=1;i<REG_NUM;i++){
-      fprintf(output,"%d  ",mips_reg[i]);
+      fprintf(output,"%d  ",reg[i]);
     }
     fprintf(output,"%d\n",pgm_c);
   }
@@ -954,7 +904,7 @@ o--;
 //	fclose(input);
 //	fclose(output);
 	return 0;
-*/
+
 }
   
 
