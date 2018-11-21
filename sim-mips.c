@@ -528,7 +528,7 @@ return newInst;
 
 
 }
-
+/*
 
               
 /////////////////////////////////////////////////////////////////////
@@ -541,13 +541,13 @@ void IF(){
   static int CycleCount = 0;
 
   if(CycleCount == 0) CycleCount = c;
-	  if(CycleCount == 1){
-		  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
-			   IFIDLatch = instMem[pgm_c/4];          
-		   	if(IFIDLatch.opcode == 7){    
-				  branchUnresolved = 1;
-			   }
-				if(IFIDLatch.opcode == 8) stopReceive=1;
+	if(CycleCount == 1){
+	  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
+	    IFIDLatch = instMem[pgm_c/4];          
+		 	if(IFIDLatch.opcode == 7){    
+			  branchUnresolved = 1;
+			}
+			if(IFIDLatch.opcode == 8) stopReceive=1;
 			pgm_c +=4;
 			IFcount++;
 		}
@@ -577,9 +577,8 @@ void ID(){
   printf("ID\n");
 	struct inst in = IFIDLatch;
 	struct inst out = in;
-printf("in opcode: %d\n", in.opcode);
+	printf("in opcode: %d\n", in.opcode);
 	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
-    
 		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 			rawHaz[in.rd] = 1; 		
 			out.rt = reg[in.rt];
@@ -717,7 +716,7 @@ void EX(){
 			}	
 		}
 	}
-	else if(CycleCount == 1){
+	if(CycleCount == 1){
 		if((EXout.opcode == 5) || (EXout.opcode == 4)){
 
 			if(EXMEMLatch.opcode == 0){
@@ -769,11 +768,13 @@ void MEM(){
 		if(in.opcode == 4){  // lw
 			printf("lw - in.rs: %d\n", in.rs);
 			MEMout.rs = DMem[in.rs];
+			EXMEMLatch.opcode = 0;
 			CycleCount = c;
 		}
 		else if(in.opcode == 5){  //sw
 			printf("sw - in.rs: %d\n",in.rs);
 			DMem[reg[in.rt]] = in.rs;
+			EXMEMLatch.opcode = 0;
 			printf("DMem: %d \n",DMem[reg[in.rt]]);
 			CycleCount = c;
 		}
@@ -781,6 +782,7 @@ void MEM(){
 		  //halt simulation
 		  if(in.opcode == 8) {
 			 stopReceive = 1;
+			 EXMEMLatch.opcode = 1;
 			 MEMWBLatch.opcode = 8;
 		  }
 		  //invalid opcode
@@ -836,6 +838,305 @@ void WB(){
   }
 }
 
+*/
+
+/////////////////////////////////////////////////////////////////////
+///////////////////////IF////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+//Fetches instruction from instruction memory
+//If there is a branch that is unresolved finish resolving the branch before continuing
+void IF(){
+  static int CycleCount = 0;
+
+  if(CycleCount == 0) CycleCount = c;
+	  if(CycleCount == 1){
+		  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
+			   IFIDLatch = instMem[pgm_c/4];          
+		   	if(IFIDLatch.opcode == 7){    
+				  branchUnresolved = 1;
+			   }
+				if(IFIDLatch.opcode == 8) stopReceive=1;
+			pgm_c +=4;
+			IFcount++;
+		}
+	}
+	if(CycleCount>0) CycleCount--;
+printf("\nIF!");
+printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
+printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
+
+}
+
+
+////////////////////////////////////////////////////////////////////
+//////////////////////////ID////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//For each type of instruction check the appropriate raw hazard
+//If there is a raw hazard do nothing
+//If there is no raw hazard continue and set the appropriate raw hazard
+//flag for the register that is being calculated
+//Put in the values that are in the registers and set them equal to the
+//output instructions rt and rs (depending on instruction opcode)
+//Check that the IDEXLatch is empty and if it is put the instruction
+//into the latch, and set the IFIDLatch to empty
+void ID(){
+	struct inst in = IFIDLatch;
+	struct inst out = in;
+	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
+    
+		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			rawHaz[in.rd] = 1; 		
+			out.rt = reg[in.rt];
+			out.rs = reg[in.rs];
+			if(IDEXLatch.opcode == 0){                                  
+				IFIDLatch.opcode = 0;                                     
+				IDEXLatch = out;
+				IDcount++;
+			}
+		}
+  }
+  else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
+    if(!rawHaz[in.rs]){
+			rawHaz[in.rt] = 1;
+			out.rs = reg[in.rs];
+		  if(IDEXLatch.opcode == 0){
+			 IFIDLatch.opcode = 0;
+			 IDEXLatch = out;
+			 IDcount++;
+			} 
+		} 
+  }
+  else if(in.opcode == 5){          //SW
+     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			rawHaz[in.rt] = 1;
+			out.rs = reg[in.rs];
+			if(IDEXLatch.opcode == 0){                                  
+				IFIDLatch.opcode = 0;                                     
+				IDEXLatch = out;
+				IDcount++;
+			}
+		}
+
+  }
+  else if(in.opcode == 7){ //beq	
+     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			branchUnresolved = 1;                                      
+			out.rs = reg[in.rs];
+			out.rt = reg[in.rt];
+			if(IDEXLatch.opcode == 0){                                  
+				IFIDLatch.opcode = 0;                                     
+				IDEXLatch = out;
+				IDcount++;
+			}
+		}
+  }
+  else{
+	 //halt simulation
+	 if(in.opcode == 8){
+		stopReceive = 1;
+		if(IDEXLatch.opcode == 0){
+		  IDEXLatch.opcode = 8;
+		}
+	 }
+      //Return error // assertion
+	 else if(in.opcode != 0){
+	 printf("ID: OPCODE ERROR\n");
+	 assert(in.opcode<8 || in.opcode>0);
+	 exit(0);
+	 }
+  }
+	printf("\nID!: ");
+	printf("\nIDEXLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IDEXLatch.opcode, IDEXLatch.rs, IDEXLatch.rt, IDEXLatch.rd, IDEXLatch.Imm);
+
+
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////
+//////////////////////////EX////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//When the previous instruction has finished the EX stage (when EXCycleCount = 0)
+//Do the correct operations based on the instruction and set how many cycles it should take
+//Then every time EX runs it will decrement the EXCycleCount by 1
+//When the counter = 1 you will have finished the operation and set the output to the correct latch
+//based on if it needs the MEM stage or not
+void EX(){
+  printf("EX\n");
+	static int CycleCount = 0;
+	if(CycleCount == 0){
+		struct inst in = IDEXLatch;
+		EXout = in;
+		if(in.opcode == 1){       //add
+			EXout.rs = in.rs + in.rt;
+			CycleCount = n;
+			EXcount++;
+		}
+		else if(in.opcode == 2){ //sub
+			EXout.rs = in.rs - in.rt;
+			CycleCount = n;
+			EXcount++;
+		}
+		else if(in.opcode == 3){  //mul
+			EXout.rs = in.rt*in.rs;
+			CycleCount = m;
+			EXcount++;
+		}
+		else if(in.opcode == 4){  //lw
+			EXout.rs = in.rs + in.Imm;
+			CycleCount = n;
+			EXcount++;
+		}
+		else if(in.opcode == 5){  //sw
+			EXout.rs = in.rs + in.Imm;
+			CycleCount = n;
+			EXcount++;
+		}
+		else if(in.opcode == 6){  //addi
+			EXout.rs = in.rs + in.Imm;
+			CycleCount = n;
+			EXcount++;
+		}
+		else if(in.opcode == 7){  //bq
+			if(in.rs == in.rt) pgm_c += 4*in.Imm;
+			CycleCount = n;
+			branchUnresolved = 0;
+			EXcount++;
+		}
+		else{
+      //Return error // assertion
+		 if(in.opcode == 8){
+				if(EXMEMLatch.opcode == 0) EXMEMLatch.opcode = 8;
+					printf("\n EX!");
+	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
+
+		}
+			else if(in.opcode != 0){
+			printf("EX: OPCODE ERROR\n");
+		  assert(in.opcode<8 && in.opcode>0);
+		  exit(0);
+			}
+		}
+	}
+	if(CycleCount == 1){
+		if((EXout.opcode == 5) || (EXout.opcode == 4)){
+			if(EXMEMLatch.opcode == 0){
+				EXMEMLatch = EXout;
+			  EXcount++;
+				IDEXLatch.opcode = 0;
+				CycleCount--;
+				printf("\n EX!");
+printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
+
+
+			}
+		}
+	  else{
+			if(MEMWBLatch.opcode == 0){
+			  MEMWBLatch = EXout;
+				EXcount++;
+				IDEXLatch.opcode = 0;
+				CycleCount--;
+				printf("\n EX!");
+	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
+
+			}	
+    }
+	}
+	else{
+		if(CycleCount > 0)		CycleCount--;
+	}
+}
+
+////////////////////////////////////////////////////////////////////
+/////////////////////////MEM////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+void MEM(){
+  printf("MEM\n");
+	static int CycleCount = 0;
+	if(CycleCount == 0){
+		struct inst in = EXMEMLatch;
+		MEMout = in;
+
+		printf("MEM.opcode: %d\n",in.opcode);
+		if(in.opcode == 4){  // lw
+			printf("lw - in.rs: %d\n", in.rs);
+			MEMout.rs = DMem[in.rs];
+			CycleCount = c;
+		}
+		else if(in.opcode == 5){  //sw
+			printf("sw - in.rs: %d\n",in.rs);
+			DMem[reg[in.rt]] = in.rs;
+			printf("DMem: %d \n",DMem[reg[in.rt]]);
+			CycleCount = c;
+		}
+		else{
+		  //halt simulation
+		  if(in.opcode == 8){
+				if(MEMWBLatch.opcode == 0) MEMWBLatch.opcode = 8;
+					printf("\n MEM!");
+	printf("\nMEMWBLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", MEMWBLatch.opcode, MEMWBLatch.rs, MEMWBLatch.rt, MEMWBLatch.rd, MEMWBLatch.Imm);
+
+
+			}
+		  //invalid opcode
+		  else if(in.opcode != 0){
+			 printf("MEM: INVALID OPCODE\n");
+			 assert(in.opcode == 4 || in.opcode == 5);
+			 exit(0);
+		  }
+		}
+	}
+	if(CycleCount == 1){
+		MEMWBLatch = MEMout;
+		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
+		EXMEMLatch.opcode = 0;
+		CycleCount--;
+	}
+	else{
+		if(CycleCount > 0)CycleCount--;
+	}
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////WB/////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+void WB(){
+  printf("\nWB");
+	printf("\nMEWBMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", MEMWBLatch.opcode, MEMWBLatch.rs, MEMWBLatch.rt, MEMWBLatch.rd, MEMWBLatch.Imm);
+
+
+	struct inst in = MEMWBLatch;
+  if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
+    reg[in.rd] = in.rs;
+		rawHaz[in.rd] = 0;
+		WBcount++;
+		MEMWBLatch.opcode = 0;
+		printf("reg %d: %d\n", in.rd, reg[in.rd]);
+  }
+	else if((in.opcode == 5) || (in.opcode == 6)){   //addi,sw
+		reg[in.rt] = in.rs;
+		rawHaz[in.rt] = 0;
+		WBcount++;
+		MEMWBLatch.opcode = 0;
+		printf("reg %d: %d\n", in.rt, reg[in.rt]);
+	}
+  else{
+    //halt simulation
+    if(in.opcode == 8) halt = 1;
+	 //Return error // assertion
+	 else if(in.opcode != 0){
+	   printf("WB: OPCODE ERROR\n");
+	   assert(in.opcode<7 || in.opcode>0);
+	   exit(0);
+	 }
+  }
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
@@ -954,7 +1255,7 @@ void main (int argc, char *argv[]){
     fgets(traceEntry, 100, input);
   }
 ///////////////////////Run mips instructions through pipleine///////////////////////////
-	/*struct inst finalInst;
+	struct inst finalInst;
 	finalInst.opcode = 8;
 	instMem[instIndex++] = finalInst;
   fclose(input);
@@ -976,41 +1277,9 @@ void main (int argc, char *argv[]){
 		  }
 		}
 	} 
-*/
-
-/*c=3;
-struct inst inst1;
-inst1.opcode = 1;
-inst1.rs = 7;
-inst1.rt = 8;
-inst1.rd = 9;
-inst1.Imm = 0;
-struct inst inst2;
-inst2.opcode = 5;
-inst2.rs = 10;
-inst2.rt = 11;
-inst2.rd = 0;
-inst2.Imm = 8;
-instMem[0] = inst1;
-instMem[1] = inst2;
-reg[inst1.rs] = 1;
-reg[inst1.rt] = 2;
-reg[inst1.rd] = 3;
-reg[inst2.rs] = 4;
-reg[inst2.rt] = 12;
-int o = 7;
-MEMWBLatch = inst2;
-while(o>0){
-WB();
-//ID();
-//IF();
-o--;
-}
-*/
 
 
 
-/*
   //output statistics in batch mode
 
   ///////////////////////output statistics in batch mode/////////////////////////:
@@ -1032,7 +1301,7 @@ o--;
 //	fclose(output);
 
 	return 0;
-*/
+
 
 //	return;
 
