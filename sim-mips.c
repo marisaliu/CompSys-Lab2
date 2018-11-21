@@ -48,6 +48,7 @@ struct inst
   int MEMcount;
   int WBcount; 
   int halt;
+  int stopReceive;
   int mode; 
   int c,m,n;
   int pgm_c;
@@ -498,16 +499,17 @@ void IF(){
 
   if(CycleCount == 0) CycleCount = c;
 	  if(CycleCount == 1){
-		  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
-			  IFIDLatch = instMem[pgm_c/4];          
+		  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
+			   IFIDLatch = instMem[pgm_c/4];          
 		   	if(IFIDLatch.opcode == 7){    
-				branchUnresolved = 1;
-			}
+				  branchUnresolved = 1;
+			   }
+				if(IFIDLatch.opcode == 8) stopReceive=1;
 			pgm_c +=4;
 			IFcount++;
 		}
 	}
-	CycleCount--;
+	if(CycleCount>0) CycleCount--;
 printf("\nIF!");
 printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
 printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
@@ -551,9 +553,9 @@ printf("in opcode: %d\n", in.opcode);
 			rawHaz[in.rt] = 1;
 			out.rs = reg[in.rs];
 		  if(IDEXLatch.opcode == 0){
-				IFIDLatch.opcode = 0;
-			IDEXLatch = out;
-			IDcount++;
+			 IFIDLatch.opcode = 0;
+			 IDEXLatch = out;
+			 IDcount++;
 			} 
 		} 
   }
@@ -583,7 +585,12 @@ printf("in opcode: %d\n", in.opcode);
   }
   else{
 	 //halt simulation
-	 if(in.opcode == 8) halt = 1;
+	 if(in.opcode == 8){
+		stopReceive = 1;
+		if(IDEXLatch.opcode == 0){
+		  IDEXLatch.opcode = 8;
+		}
+	 }
       //Return error // assertion
 	 else if(in.opcode != 0){
 	 printf("ID: OPCODE ERROR\n");
@@ -651,20 +658,23 @@ void EX(){
 		else{
       //Return error // assertion
 		  if(in.opcode == 8){
-				halt = 1;
+				stopReceive = 1;
+				if((EXMEMLatch.opcode == 0) && (MEMWBLatch.opcode == 0)){
+				  MEMWBLatch.opcode = 8;
+				}
 			}
 			else if(in.opcode != 0){
-			printf("EX: OPCODE ERROR\n");
-		  assert(in.opcode<8 && in.opcode>0);
-		  exit(0);
+			  printf("EX: OPCODE ERROR\n");
+		     assert(in.opcode<8 && in.opcode>0);
+		     exit(0);
 			}	
 		}
 	}
-	if(CycleCount == 1){
+	else if(CycleCount == 1){
 		if((EXout.opcode == 5) || (EXout.opcode == 4)){
 			if(EXMEMLatch.opcode == 0){
 				EXMEMLatch = EXout;
-			  EXcount++;
+			   EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
 				printf("\n EX!");
@@ -676,10 +686,10 @@ printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatc
 	  else{ 
 			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = EXout;
-				EXcount++;
-				IDEXLatch.opcode = 0;
-				CycleCount--;
-				printf("\n EX!");
+		  	  EXcount++;
+			  IDEXLatch.opcode = 0;
+			  CycleCount--;
+			  printf("\n EX!");
 	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
 
 		} 
@@ -712,7 +722,10 @@ void MEM(){
 		}
 		else{
 		  //halt simulation
-		  if(in.opcode == 8) halt = 1;
+		  if(in.opcode == 8) {
+			 stopReceive = 1;
+			 MEMWBLatch.opcode = 8;
+		  }
 		  //invalid opcode
 		  else if(in.opcode != 0){
 			 printf("MEM: INVALID OPCODE\n");
@@ -741,6 +754,7 @@ void MEM(){
 void WB(){
   printf("WB\n");
 	struct inst in = MEMWBLatch;
+	printf("wb opcode %d\n", in.opcode);
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul  
     reg[in.rd] = in.rs;
 		rawHaz[in.rd] = 0;
@@ -812,7 +826,7 @@ void main (int argc, char *argv[]){
   int i;//for loop counter
   long pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
-  halt = 0;     
+  stopReceive = halt = 0;//flags for haltSimulation
   DMem = (int *)malloc(500 * sizeof(int));
   int dataAddress=0;
 
@@ -892,7 +906,7 @@ void main (int argc, char *argv[]){
 		sim_cycle++;
 		if(sim_mode){
 		  for(int i=1; i<32; i++){
-			 printf("Register %d: %d, ", i, reg[i]);
+			 printf("Register %d: %d\n", i, reg[i]);
 		  }
 		  printf("Cycle: %d\nPC: %d\nPress enter to advance\n", sim_cycle, pgm_c);
 		  while(getchar()!='\n'){
@@ -917,7 +931,7 @@ void main (int argc, char *argv[]){
   //close input and output files at the end of the simulation
 //	fclose(input);
 //	fclose(output);
-	return 0;
+	return;
 
 }
   
