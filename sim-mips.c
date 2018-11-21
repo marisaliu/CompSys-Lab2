@@ -579,7 +579,7 @@ printf("\n in opcode: %d", in.opcode);
 	 //halt simulation
 	 if(in.opcode == 8) halt = 1;
       //Return error // assertion
-	 if(in.opcode != 0){
+	 else if(in.opcode != 0){
 	 printf("ID: OPCODE ERROR\n");
 	 assert(in.opcode<8 || in.opcode>0);
 	 exit(0);
@@ -695,7 +695,7 @@ void MEM(){
 		  //halt simulation
 		  if(in.opcode == 8) halt = 1;
 		  //invalid opcode
-		  if(in.opcode != 0){
+		  else if(in.opcode != 0){
 			 printf("MEM: INVALID OPCODE\n");
 			 assert(in.opcode == 4 || in.opcode == 5);
 			 exit(0);
@@ -737,7 +737,7 @@ void WB(){
     //halt simulation
     if(in.opcode == 8) halt = 1;
 	 //Return error // assertion
-    if(in.opcode != 0){
+	 else if(in.opcode != 0){
 	   printf("WB: OPCODE ERROR\n");
 	   assert(in.opcode<7 || in.opcode>0);
 	   exit(0);
@@ -880,12 +880,19 @@ void main (int argc, char *argv[]){
   fclose(input);
  
   while(!halt){
+	 printf("start\n");
 		WB();
 		MEM();
 		EX();
 		ID();
 		IF();
 		sim_cycle++;
+		if(sim_mode){
+		  printf("On cycle %d, press enter to advance\n", sim_cycle);
+		  while(getchar()!='\n'){
+			 getchar();
+		  }
+		}
 	} 
 
 /*c=3;
