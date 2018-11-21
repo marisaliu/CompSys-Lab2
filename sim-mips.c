@@ -1126,6 +1126,9 @@ void WB(){
 		MEMWBLatch.opcode = 0;
 		printf("reg %d: %d\n", in.rt, reg[in.rt]);
 	}
+	else if(in.opcode == 4 || in.opcode == 7){
+		MEMWBLatch.opcode = 0;
+	}
   else{
     //halt simulation
     if(in.opcode == 8) halt = 1;
