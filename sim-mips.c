@@ -475,12 +475,13 @@ while (p != NULL){            //loop through until done
     Error_IllegalOpcode();              //return illegal opcode error because it's not any of the valid ones
   }
   //*/
+	/*
 printf("Opcode: %d\n", newInst.opcode);
 printf("rs: %d\n", newInst.rs);
 printf("rd: %d\n", newInst.rd);
 printf("rt: %d\n", newInst.rt);
 printf("Imm: %d\n", newInst.Imm);
-
+*/
 return newInst;
 }
 
@@ -493,13 +494,13 @@ return newInst;
 //If there is a branch that is unresolved finish resolving the branch before continuing
 void IF(){
   printf("IF\n");
-static int CycleCount = 0;
+  static int CycleCount = 0;
 
-   if(CycleCount == 0) CycleCount = c;
-	if(CycleCount == 1){
-		if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
-			IFIDLatch = instMem[pgm_c/4];          
-			if(IFIDLatch.opcode == 7){    
+  if(CycleCount == 0) CycleCount = c;
+	  if(CycleCount == 1){
+		  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
+			  IFIDLatch = instMem[pgm_c/4];          
+		   	if(IFIDLatch.opcode == 7){    
 				branchUnresolved = 1;
 			}
 			pgm_c +=4;
@@ -507,10 +508,10 @@ static int CycleCount = 0;
 		}
 	}
 	CycleCount--;
-
-//printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
-//printf("\ninstMem \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
-//printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
+printf("\nIF!");
+printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
+printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
+printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
 
 }
 
@@ -590,6 +591,10 @@ printf("in opcode: %d\n", in.opcode);
 	 exit(0);
 	 }
   }
+	printf("\nID!: \n");
+	printf("\nIDEXLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IDEXLatch.opcode, IDEXLatch.rs, IDEXLatch.rt, IDEXLatch.rd, IDEXLatch.Imm);
+
+
 }
 
 
@@ -655,13 +660,17 @@ void EX(){
 			}	
 		}
 	}
-	else if(CycleCount == 1){
+	if(CycleCount == 1){
 		if((EXout.opcode == 5) || (EXout.opcode == 4)){
 			if(EXMEMLatch.opcode == 0){
 				EXMEMLatch = EXout;
 			  EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
+				printf("\n EX!");
+printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
+
+
 			} 
 		} 
 	  else{ 
@@ -670,11 +679,14 @@ void EX(){
 				EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
-			} 
+				printf("\n EX!");
+	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
+
+		} 
     } 
 	} 
 	else{
-		CycleCount--;
+		if(CycleCount > 0)		CycleCount--;
 	}
 }
 
@@ -733,13 +745,15 @@ void WB(){
     reg[in.rd] = in.rs;
 		rawHaz[in.rd] = 0;
 		WBcount++;
-//		printf("reg %d: %d\n", in.rd, reg[in.rd]);
+		MEMWBLatch.opcode = 0;
+		printf("reg %d: %d\n", in.rd, reg[in.rd]);
   }
 	else if((in.opcode == 5) || (in.opcode == 6)){   //addi,sw
 		reg[in.rt] = in.rs;
 		rawHaz[in.rt] = 0;
 		WBcount++;
-//		printf("reg %d: %d\n", in.rt, reg[in.rt]);
+		MEMWBLatch.opcode = 0;
+		printf("reg %d: %d\n", in.rt, reg[in.rt]);
 	}
   else{
     //halt simulation
@@ -878,7 +892,7 @@ void main (int argc, char *argv[]){
 		sim_cycle++;
 		if(sim_mode){
 		  for(int i=1; i<32; i++){
-			 printf("Register %d: %d", i, reg[i]);
+			 printf("Register %d: %d, ", i, reg[i]);
 		  }
 		  printf("Cycle: %d\nPC: %d\nPress enter to advance\n", sim_cycle, pgm_c);
 		  while(getchar()!='\n'){
