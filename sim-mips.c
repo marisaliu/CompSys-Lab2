@@ -352,6 +352,7 @@ while (p != NULL){            //loop through until done
 	  arg[a] = atoi(withoutn);
         }
 	else{
+	  printf("no\n");
 	Error_ImmediateField();
         }
     }
@@ -363,6 +364,7 @@ while (p != NULL){            //loop through until done
           arg[a] = atoi(p);
 	  }
 	else{
+	  printf("there\n");
 		Error_ImmediateField();                //throw immediate field error 
 	}
 	a++;                           //increment counter for index
@@ -450,6 +452,7 @@ while (p != NULL){            //loop through until done
 	newInst.Imm = arg[3];
     }
     else{
+		printf("here\n");
 	Error_ImmediateField();                                //return immediate field too big
     }
 
@@ -489,6 +492,7 @@ return newInst;
 //Fetches instruction from instruction memory
 //If there is a branch that is unresolved finish resolving the branch before continuing
 void IF(){
+  printf("IF\n");
 static int CycleCount = 0;
 
    if(CycleCount == 0) CycleCount = c;
@@ -524,6 +528,7 @@ static int CycleCount = 0;
 //into the latch, and set the IFIDLatch to empty
 
 void ID(){
+  printf("ID\n");
 	struct inst in = IFIDLatch;
 	struct inst out = in;
 printf("in opcode: %d\n", in.opcode);
@@ -597,6 +602,7 @@ printf("in opcode: %d\n", in.opcode);
 //When the counter = 1 you will have finished the operation and set the output to the correct latch
 //based on if it needs the MEM stage or not
 void EX(){
+  printf("EX\n");
 	static int CycleCount = 0;
 	if(CycleCount == 0){
 		struct inst in = IDEXLatch;
@@ -676,6 +682,7 @@ void EX(){
 /////////////////////////MEM////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 void MEM(){
+  printf("MEM\n");
 	static int CycleCount = 0;
 	if(CycleCount == 0){
 		struct inst in = EXMEMLatch;
@@ -720,6 +727,7 @@ void MEM(){
 //////////////////////////////WB/////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 void WB(){
+  printf("WB\n");
 	struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul  
     reg[in.rd] = in.rs;
@@ -880,7 +888,6 @@ void main (int argc, char *argv[]){
   fclose(input);
  
   while(!halt){
-	 printf("start\n");
 		WB();
 		MEM();
 		EX();
@@ -888,7 +895,10 @@ void main (int argc, char *argv[]){
 		IF();
 		sim_cycle++;
 		if(sim_mode){
-		  printf("On cycle %d, press enter to advance\n", sim_cycle);
+		  for(int i=1; i<32; i++){
+			 printf("Register %d: %d", i, reg[i]);
+		  }
+		  printf("Cycle: %d\nPC: %d\nPress enter to advance\n", sim_cycle, pgm_c);
 		  while(getchar()!='\n'){
 			 getchar();
 		  }
