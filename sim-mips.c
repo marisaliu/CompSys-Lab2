@@ -971,31 +971,37 @@ void EX(){
 		EXout = in;
 		if(in.opcode == 1){       //add
 			EXout.rs = in.rs + in.rt;
+			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = n;
 			EXcount++;
 		}
 		else if(in.opcode == 2){ //sub
 			EXout.rs = in.rs - in.rt;
+			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = n;
 			EXcount++;
 		}
 		else if(in.opcode == 3){  //mul
 			EXout.rs = in.rt*in.rs;
+			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = m;
 			EXcount++;
 		}
 		else if(in.opcode == 4){  //lw
 			EXout.rs = in.rs + in.Imm;
+			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 			EXcount++;
 		}
 		else if(in.opcode == 5){  //sw
 			EXout.rs = in.rs + in.Imm;
+			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 			EXcount++;
 		}
 		else if(in.opcode == 6){  //addi
 			EXout.rs = in.rs + in.Imm;
+			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 			EXcount++;
 		}
