@@ -96,6 +96,17 @@ printf("Removed punctuation: %s \n", currentLine);
 }
 
 ////////////////////////////////////////////////////////////////////////////
+/////////////////////////REGNUMBERCONVERTER ERRORS/////////////////////////
+///////////////////////////////////////////////////////////////////////////
+void regIllegal(){
+printf("Error: Illegal register name detected\n");
+exit(1);
+}
+void regOOB(){
+printf("Error: Register number is out of bounds\n");
+exit(1);
+}
+////////////////////////////////////////////////////////////////////////////
 ////////////////////REGNUMBERCONVERTER//////////////////////////////////////
 //Takes in input from progScanner() output and converts any registers that//
 //start with $ to numbers and returns error if invalid register/////////////
@@ -115,7 +126,7 @@ char *regNumberConverter(char *line){
        //cases
         if(line[pos] == 't'){ 
           if(isdigit(line[++pos])){		//check what second char is
-	    if(!((line[pos+1] == ' ') || line[pos+1] == '\0') || (line[pos+1] == '\n')){return "1";} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
+	       if(!((line[pos+1] == ' ') || line[pos+1] == '\0') || (line[pos+1] == '\n')){regIllegal();}//check for no extra char
 	    if((line[pos]-'0')<8){
 	      regNum = 8+(line[pos++]-'0'); //register number in int
 	      sprintf(regChar,"%d", regNum);
@@ -134,116 +145,116 @@ char *regNumberConverter(char *line){
 	      newLine[newPos++] = regChar[1];
 	    }
 	  }
-	  else{return "a";} //error if not a number
+	  else{regIllegal();} //error if not a number
 	}
 	else if(line[pos] == 's'){				//check for s0-7 or sp
           if(isdigit(line[++pos])){		//if second char is number
-	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "2";} //check for no extra char
+	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){regIllegal();} //check for no extra char
 	    if((line[pos]-'0')<8){
 	      regNum = 16+(line[pos++]-'0'); //register number in int
 	      sprintf(regChar,"%d", regNum);	
 	      newLine[newPos++] = regChar[0];
 	      newLine[newPos++] = regChar[1];
 	    }
-	    else{return "b";}
+	    else{regIllegal();}
 	  }
 	  else if(line[pos++] == 'p'){   //if sp
-	    if(!((line[pos] == ' ') || (line[pos] == '\0') || (line[pos++] == '\n'))){return "3";} //check for no extra char
+	    if(!((line[pos] == ' ') || (line[pos] == '\0') || (line[pos++] == '\n'))){regIllegal();} //check for no extra char
 	    newLine[newPos++] = '2';
 	    newLine[newPos++] = '9';
 		  }
-	    else{return "c";} //error if not a number
+	    else{regIllegal();} //error if not a number
 	   }
 	  else if(line[pos] == 'a'){	//if a0-a3
             if(isdigit(line[++pos])){		
-	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "4";} //check for no extra char 
+	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){regIllegal();} //check for no extra char 
 	      if((line[pos]-'0')<4){
 	        regNum = 4+(line[pos++]-'0'); //register number in int
 	        sprintf(regChar,"%d", regNum);
 		newLine[newPos++] = regChar[0];
 	      }
-	      else{return "d";}
+	      else{regIllegal();}
 	    }
 	    else if(line[pos] == 't'){
-	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))) {return "17";}
+	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))) {regIllegal();}
 	      pos++;
 	      newLine[newPos++] = '1';
 	    }
-	    else{return "e";} //error if not a number
+	    else{regIllegal();} //error if not a number
   	 }
 	 else if(line[pos] == 'v'){ //if v0-v1
            if(isdigit(line[++pos])){		
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "5";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){regIllegal();} //check for no extra char
 	     if((line[pos]-'0')<2){
 	       regNum = 2+(line[pos++]-'0'); //register number in int
       	       sprintf(regChar,"%d", regNum);
 	       newLine[newPos++] = regChar[0];
 	     }
-	     else{return "f";}
+	     else{regIllegal();}
 	   }
-	   else{return "g";} //error if not a number
+	   else{regIllegal();} //error if not a number
 	 }
 	 else if(line[pos] == 'k'){	//if k0-k1
            if(isdigit(line[++pos])){		
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "6";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){regIllegal();} //check for no extra char
 	     if((line[pos]-'0')<2){
 	       regNum = 26+(line[pos++]-'0'); //register number in int
 	       sprintf(regChar,"%d", regNum);
 	       newLine[newPos++] = regChar[0];
 	       newLine[newPos++] = regChar[1];
 	     }
-	     else{return "h";}
+	     else{regIllegal();}
 	   }
-	   else{return "i";} //error if not a number
+	   else{regIllegal();} //error if not a number
 	 }
 	   //if doesnt begin with t, s, a, v, or k
 	 else if(line[pos] == 'g'){ //check for gp
 	  if(line[++pos] == 'p'){
-	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "7";} //check for no extra char
+	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){regIllegal();} //check for no extra char
       	    pos++;
 	    newLine[newPos++] = '2';
 	    newLine[newPos++] = '8';
 	  }
-	  else{return "j";}
+	  else{regIllegal();}
 	 }
          else if(line[pos] == 'f'){ //check for fp
 	   if(line[++pos] == 'p'){
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "8";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){regIllegal();} //check for no extra char
 	     pos++;
 	     newLine[newPos++] = '3';
 	     newLine[newPos++] = '0';
 	   }
-	   else{return "k";}
+	   else{regIllegal();}
 	 }
 	 else if(line[pos] == 'r'){	//check for ra
 	   if(line[++pos] == 'a'){
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "9";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){regIllegal();} //check for no extra char
 	     pos++;
 	     newLine[newPos++] = '3';
 	     newLine[newPos++] = '1';
 	   }
-	   else{return "l";}
+	   else{regIllegal();}
 	 }
 	 else if(line[pos] == 'z'){	//check for zero
 	   if(line[++pos] == 'e'){
 	     if(line[++pos] == 'r'){
 	       if(line[++pos] == 'o'){
-	         if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "10";} //check for no extra char
+	         if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){regIllegal();} //check for no extra char
 	         pos++; 
 	         newLine[newPos++] = '0';
 	       }
-	       else{return "m";}
+	       else{regIllegal();}
 	     }
-	     else{return "n";}
+	     else{regIllegal();}
 	   }
-	   else{return "o";}
+	   else{regIllegal();}
 	 }
 	 else if(isdigit(line[pos])){	//check if 0-31
 	   if(isdigit(line[++pos])){
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){ return "11";}
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){regIllegal();}
 	     regNum = 10*(line[pos-1]-'0');
 	     regNum += (line[pos]-'0');
-	       if(regNum > 31) return "p";
+	       if(regNum > 31) regOOB();
 	       newLine[newPos++] = line[pos-1];
 	       newLine[newPos++] = line[pos++];
 	     }      
@@ -251,9 +262,9 @@ char *regNumberConverter(char *line){
              regNum = (line[pos-1]-'0');
 	     newLine[newPos++] = line[pos-1];
 	   }
-           else{ return "q";}
+           else{regIllegal();}
 	 }
-	 else{return "r";}			//return error if no matches  
+	 else{regIllegal();}			//return error if no matches  
       } 
 	   if(line[pos]!='\n') newLine[newPos++] = line[pos];
     }
@@ -544,21 +555,25 @@ void IF(){
   if(CycleCount == 0) CycleCount = c;
 	  if(CycleCount == 1){
 		  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
-			   IFIDLatch = instMem[pgm_c/4];          
-		   	if(IFIDLatch.opcode == 7){    
-				  branchUnresolved = 1;
-			   }
-				if(IFIDLatch.opcode == 8) stopReceive=1;
-			pgm_c +=4;
-			IFcount++;
-		}
-	}
+			 IFIDLatch = instMem[pgm_c/4];          
+		    if(IFIDLatch.opcode == 7){    
+			   branchUnresolved = 1;
+			 }
+
+			 if(IFIDLatch.opcode == 8) stopReceive=1;
+			 else{
+			   pgm_c +=4;
+			   IFcount++;
+		    }
+		  }
+	  }
 	if(CycleCount>0) CycleCount--;
+/*
 printf("\nIF!");
 printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
 printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
 printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
-
+*/
 }
 
 
@@ -639,10 +654,10 @@ void ID(){
 	 exit(0);
 	 }
   }
-	printf("\nID!: ");
+/*	printf("\nID!: ");
 	printf("\nIDEXLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IDEXLatch.opcode, IDEXLatch.rs, IDEXLatch.rt, IDEXLatch.rd, IDEXLatch.Imm);
 
-
+*/
 }
 
 
@@ -657,7 +672,7 @@ void ID(){
 //When the counter = 1 you will have finished the operation and set the output to the correct latch
 //based on if it needs the MEM stage or not
 void EX(){
-  printf("EX\n");
+  //printf("EX\n");
 	static int CycleCount = 0;
 	if(CycleCount == 0){
 		struct inst in = IDEXLatch;
@@ -708,9 +723,9 @@ void EX(){
       //Return error // assertion
 		 if(in.opcode == 8){
 				if(EXMEMLatch.opcode == 0) EXMEMLatch.opcode = 8;
-					printf("\n EX!");
+				/*	printf("\n EX!");
 	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
-
+*/
 		}
 			else if(in.opcode != 0){
 			printf("EX: OPCODE ERROR\n");
@@ -726,9 +741,9 @@ void EX(){
 			  EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
-				printf("\n EX!");
+/*				printf("\n EX!");
 printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
-
+*/
 
 			}
 		}
@@ -738,9 +753,9 @@ printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatc
 				EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
-				printf("\n EX!");
+/*				printf("\n EX!");
 	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
-
+*/
 			}	
     }
 	}
@@ -753,7 +768,7 @@ printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatc
 /////////////////////////MEM////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 void MEM(){
-  printf("MEM\n");
+  //printf("MEM\n");
 	static int CycleCount = 0;
 	if(CycleCount == 0){
 		struct inst in = EXMEMLatch;
@@ -775,9 +790,9 @@ void MEM(){
 		  //halt simulation
 		  if(in.opcode == 8){
 				if(MEMWBLatch.opcode == 0) MEMWBLatch.opcode = 8;
-					printf("\n MEM!");
+/*					printf("\n MEM!");
 	printf("\nMEMWBLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", MEMWBLatch.opcode, MEMWBLatch.rs, MEMWBLatch.rt, MEMWBLatch.rd, MEMWBLatch.Imm);
-
+*/
 
 			}
 		  //invalid opcode
@@ -790,7 +805,7 @@ void MEM(){
 	}
 	if(CycleCount == 1){
 		MEMWBLatch = MEMout;
-		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
+//		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
 		EXMEMLatch.opcode = 0;
 		CycleCount--;
 	}
@@ -806,9 +821,9 @@ void MEM(){
 //////////////////////////////WB/////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 void WB(){
-  printf("\nWB");
+/*  printf("\nWB");
 	printf("\nMEWBMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", MEMWBLatch.opcode, MEMWBLatch.rs, MEMWBLatch.rt, MEMWBLatch.rd, MEMWBLatch.Imm);
-
+*/
 
 	struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
@@ -961,7 +976,7 @@ void main (int argc, char *argv[]){
   }
 ///////////////////////Run mips instructions through pipleine///////////////////////////
 
-  /*
+  
   struct inst finalInst;
 	finalInst.opcode = 8;
 	instMem[instIndex++] = finalInst;
@@ -1009,7 +1024,7 @@ void main (int argc, char *argv[]){
 
 	return 0;
 
-*/
+
 
 
 }
