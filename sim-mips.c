@@ -740,7 +740,7 @@ void EX(){
 		if((EXout.opcode == 5) || (EXout.opcode == 4)){
 			if(EXMEMLatch.opcode == 0){
 				EXMEMLatch = EXout;
-			  EXcount++;
+			   if(EXout.opcode != 8) EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
 			}
@@ -748,7 +748,7 @@ void EX(){
 	  else{
 			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = EXout;
-				EXcount++;
+				if(EXout.opcode != 8) EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
 /*				printf("\n EX!");
@@ -760,7 +760,7 @@ void EX(){
 	else{
 		if(CycleCount > 0){
 			CycleCount--;
-			EXcount++;
+			if(EXout.opcode != 8)EXcount++;
 		}
 	}
 }
@@ -809,13 +809,13 @@ void MEM(){
 		MEMWBLatch = MEMout;
 //		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
 		EXMEMLatch.opcode = 0;
-		MEMcount++;
+		if(MEMout.opcode != 8)MEMcount++;
 		CycleCount--;
 	}
 	else{
 		if(CycleCount > 0){
 			CycleCount--;
-			MEMcount++;
+			if(MEMout.opcode != 8)MEMcount++;
 		}
 	}
 }
