@@ -75,10 +75,13 @@ char *progScanner(char* currentLine){
   int i;
   int pos=0;
 
-for(char *p = currentLine; *p; ++p)
+for(char *p = currentLine; *p; ++p){
   if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' '))
 	currentLine[pos++] =*p;
-
+  else if((*p=='(') || (*p==')')){
+	 currentLine[pos++] = ' ';
+  }
+}
   currentLine[pos]='\0';
 
 
@@ -104,6 +107,7 @@ char *regNumberConverter(char *line){
   int regNum;
   int pos=0;
   int newPos=0;
+  printf("reg in: %s\n", line);
   for(pos=0; pos<strlen(line); pos++){
     if(line[pos] == '$'){ //do nothing until hit a $
       pos++;
@@ -255,7 +259,7 @@ char *regNumberConverter(char *line){
     }
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
-    printf("%s\n", newLine);
+    printf("reg out: %s\n", newLine);
     return newNewLine;
 //return newLine;
 }
@@ -952,7 +956,7 @@ void main (int argc, char *argv[]){
 //  printf("%d", strcmp(traceEntry, hs));
   		//progscannner
 		//regnumberconverter  
-		instMem[instIndex++] = parser(traceEntry);
+		instMem[instIndex++] = parser(regNumberConverter(progScanner(traceEntry)));
     fgets(traceEntry, 100, input);
   }
 ///////////////////////Run mips instructions through pipleine///////////////////////////
