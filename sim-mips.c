@@ -74,11 +74,15 @@ char *progScanner(char* currentLine){
   int i;
   int pos=0;
 
-for(char *p = currentLine; *p; ++p)
+for(char *p = currentLine; *p; ++p){
   if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' '))
 	currentLine[pos++] =*p;
-  else
-    currentLine[pos++] = ' ';
+  else if((*p=='(') || (*p==')')){
+	 currentLine[pos++] = ' ';
+  }
+
+}
+  currentLine[pos]='\0';
 
 printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
@@ -103,6 +107,7 @@ char *regNumberConverter(char *line){
   int regNum;
   int pos=0;
   int newPos=0;
+  printf("reg in: %s\n", line);
   for(pos=0; pos<strlen(line); pos++){
     if(line[pos] == '$'){ //do nothing until hit a $
       pos++;
@@ -254,9 +259,9 @@ char *regNumberConverter(char *line){
     }
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
-    printf("After regNumberConverter: %s\n", newLine);
+
+    printf("After regNumberConverter: %s\n", newNewLine);
     return newNewLine;
-//return newLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -300,7 +305,7 @@ struct inst parser(char *line){
   
   char *p = malloc(100*sizeof(char));                //store each section after parse
   //char *instrname = malloc(4 * sizeof(char));         //name of instruction
-  int arg[4];             //integer array of argument values
+  int arg[4];             //integer array of argument values 
   int c=0, a=1;               //counters
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
@@ -412,8 +417,7 @@ while (p != NULL){            //loop through until done
   }
   //  printf("%d \n", arg[0]);
    //////////////actually check which instructions it is and put the arguments in the right variables in the inst
-   //if(index 0 is ADD, SUB, MUL) --> contains opcode, rs, rt, rd, funct (r)
-//printf("%d",arg[0]);
+ 
   if((arg[0]==1) || (arg[0]==2) || (arg[0])==3){      //if opcode is "add" or "sub" or "mul", respectively
   int i;
     for(i=1;i < 4; i++)
@@ -432,7 +436,20 @@ while (p != NULL){            //loop through until done
 
   }
   else if((arg[0]==4) || (arg[0]==5)){              // if opcode is "lw" or "sw", respectively
-  newInst.opcode=arg[0];
+  newInst.opcode=arg[0];  
+  if(c == 3){
+    if((arg[1] <= 31) && (arg[1] >= 0)){
+	newInst.rt = arg[1];
+    }
+    else{ Error_InvalidRegister(); }
+    
+    if((arg[2] <= 31) && (arg[2] >= 0)){
+	newInst.rs = arg[2];
+    }
+    else{ Error_InvalidRegister();}
+
+  }
+  else {
     if((arg[1] <= 31) && (arg[1] >= 0)){
 	newInst.rt = arg[1];
       }
@@ -460,6 +477,7 @@ while (p != NULL){            //loop through until done
     }
     else{
 	Error_ImmediateField();                   //return error, either too small or bigger than largest unsigned 16-bit number
+    }
     }
   }
   else if ((arg[0]==6) || (arg[0]==7)){                           // if opcode is "addi" or "beq" respectively
@@ -936,10 +954,9 @@ void main (int argc, char *argv[]){
   fgets(traceEntry, 100, input);                 //get first line
   while(strcmp(traceEntry, hs) != 0){                  //if it doesn't reach haltSimulation
   printf("String input is %s \n", traceEntry);    
-  	//progScanner(traceEntry);
-//regNumberConverter(progScanner(traceEntry));
-  parser(regNumberConverter(progScanner(traceEntry)));  
-//	instMem[instIndex++] = parser(traceEntry);
+  		//progscannner
+		//regnumberconverter  
+		instMem[instIndex++] = parser(regNumberConverter(progScanner(traceEntry)));
     fgets(traceEntry, 100, input);
   }
 ///////////////////////Run mips instructions through pipleine///////////////////////////
