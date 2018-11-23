@@ -62,7 +62,10 @@ struct inst
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-
+void Error_ParanthesesMismatch(){
+printf("Error: Parantheses Mismatch!");
+exit(1);
+}
 
 ////////////////////////////////////////////////////////////////////////////
 /////////////////////////PROGSCANNER////////////////////////////////////////
@@ -73,16 +76,30 @@ char *progScanner(char* currentLine){
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
+  int cp[2]={0};
+  int l=0, r=0;
 
 for(char *p = currentLine; *p; ++p){
-  if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' '))
+  if(*p == '(') {cp[0]=1; l++;}
+
+  if(*p == ')'){
+    r++;
+    if (cp[0]!=0) {cp[1]=2;}
+    else Error_ParanthesesMismatch();
+  }
+
+  if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' ')){
 	currentLine[pos++] =*p;
+
+  }
   else if((*p=='(') || (*p==')')){
 	 currentLine[pos++] = ' ';
   }
 
 }
   currentLine[pos]='\0';
+
+if(l != r) Error_ParanthesesMismatch();
 
 //printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
@@ -107,7 +124,7 @@ char *regNumberConverter(char *line){
   int regNum;
   int pos=0;
   int newPos=0;
-  //printf("reg in: %s\n", line);
+
   for(pos=0; pos<strlen(line); pos++){
     if(line[pos] == '$'){ //do nothing until hit a $
       pos++;
@@ -524,12 +541,12 @@ while (p != NULL){            //loop through until done
   }
   //*/
 	
-printf("Opcode: %d\n", newInst.opcode);
+/*printf("Opcode: %d\n", newInst.opcode);
 printf("rs: %d\n", newInst.rs);
 printf("rd: %d\n", newInst.rd);
 printf("rt: %d\n", newInst.rt);
 printf("Imm: %d\n", newInst.Imm);
-
+*/
 return newInst;
 }
 
@@ -588,6 +605,7 @@ void ID(){
 				IDcount++;
 			}
 		}
+		else printf("hazard");
   }
   else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
     if(!rawHaz[in.rs]){
@@ -598,7 +616,7 @@ void ID(){
 			 IDEXLatch = out;
 			 IDcount++;
 			} 
-		} 
+		} else printf("hazard"); 
   }
   else if(in.opcode == 5){          //SW
      if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
@@ -609,7 +627,7 @@ void ID(){
 				IDEXLatch = out;
 				IDcount++;
 			}
-		}
+		} else printf("hazard");
 
   }
   else if(in.opcode == 7){ //beq	
@@ -622,7 +640,7 @@ void ID(){
 				IDEXLatch = out;
 				IDcount++;
 			}
-		}
+		} else printf("hazard");
   }
   else{
 	 //halt simulation
@@ -681,13 +699,13 @@ void EX(){
 			EXcount++;
 		}
 		else if(in.opcode == 4){  //lw
-			EXout.rs = in.rs + in.Imm;
+			EXout.rs = in.rs + (in.Imm/4);
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 			EXcount++;
 		}
 		else if(in.opcode == 5){  //sw
-			EXout.rs = in.rs + in.Imm;
+			EXout.rs = in.rs + (in.Imm/4);
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 			EXcount++;
@@ -818,14 +836,14 @@ void WB(){
 		MEMWBLatch.opcode = 0;
 		printf("reg %d: %d\n", in.rd, reg[in.rd]);
   }
-	else if((in.opcode == 5) || (in.opcode == 6)){   //addi,sw
+	else if((in.opcode == 4) || (in.opcode == 6)){   //addi,sw
 		reg[in.rt] = in.rs;
 		rawHaz[in.rt] = 0;
 		WBcount++;
 		MEMWBLatch.opcode = 0;
 		printf("reg %d: %d\n", in.rt, reg[in.rt]);
 	}
-	else if(in.opcode == 4 || in.opcode == 7){
+	else if(in.opcode == 5 || in.opcode == 7){
 		MEMWBLatch.opcode = 0;
 	}
   else{
@@ -1008,9 +1026,6 @@ void main (int argc, char *argv[]){
 //	fclose(output);
 
 	return 0;
-
-
-
 }
   
 
