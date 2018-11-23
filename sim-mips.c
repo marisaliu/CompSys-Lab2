@@ -551,10 +551,14 @@ void IF(){
 				if(IFIDLatch.opcode == 8) stopReceive=1;
 			pgm_c +=4;
 			IFcount++;
+			CycleCount--;
 		}
 	}
-	if(CycleCount>0) CycleCount--;
-printf("\nIF!");
+	if(CycleCount>0){
+		CycleCount--;
+		IFcount++;
+	}
+printf("\nIFcount %d", IFcount);
 printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
 printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
 printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
@@ -666,43 +670,36 @@ void EX(){
 			EXout.rs = in.rs + in.rt;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = n;
-			EXcount++;
 		}
 		else if(in.opcode == 2){ //sub
 			EXout.rs = in.rs - in.rt;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = n;
-			EXcount++;
 		}
 		else if(in.opcode == 3){  //mul
 			EXout.rs = in.rt*in.rs;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = m;
-			EXcount++;
 		}
 		else if(in.opcode == 4){  //lw
 			EXout.rs = in.rs + (in.Imm/4);
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
-			EXcount++;
 		}
 		else if(in.opcode == 5){  //sw
 			EXout.rs = in.rs + (in.Imm/4);
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
-			EXcount++;
 		}
 		else if(in.opcode == 6){  //addi
 			EXout.rs = in.rs + in.Imm;
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
-			EXcount++;
 		}
 		else if(in.opcode == 7){  //bq
 			if(in.rs == in.rt) pgm_c += 4*in.Imm;
 			CycleCount = n;
 			branchUnresolved = 0;
-			EXcount++;
 		}
 		else{
       //Return error // assertion
@@ -745,7 +742,10 @@ printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatc
     }
 	}
 	else{
-		if(CycleCount > 0)		CycleCount--;
+		if(CycleCount > 0){
+			CycleCount--;
+			EXcount++;
+		}
 	}
 }
 
@@ -792,10 +792,14 @@ void MEM(){
 		MEMWBLatch = MEMout;
 		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
 		EXMEMLatch.opcode = 0;
+		MEMcount++;
 		CycleCount--;
 	}
 	else{
-		if(CycleCount > 0)CycleCount--;
+		if(CycleCount > 0){
+			CycleCount--;
+			MEMcount++;
+		}
 	}
 }
 
@@ -985,15 +989,24 @@ void main (int argc, char *argv[]){
 		}
 	} 
 
-
+printf("EXCOUNT: %d\n", sim_cycle);
 
   //output statistics in batch mode
-
+	float IFutil;
+	float IDutil;
+	float EXutil;
+	float MEMutil;
+	float WButil;
+	IFutil = (float) IFcount/ sim_cycle;
+	IDutil = (float) IDcount/sim_cycle;
+	EXutil = (float) EXcount/sim_cycle;
+	MEMutil = (float) MEMcount/sim_cycle;
+	WButil = (float) WBcount/sim_cycle;
   ///////////////////////output statistics in batch mode/////////////////////////:
 
   if(sim_mode==0){
     fprintf(output,"program name: %s\n",argv[5]);
-    fprintf(output,"stage utilization: %f  %f  %f  %f  %f \n", IFcount, IDcount, EXcount, MEMcount, WBcount);
+    fprintf(output,"stage utilization: %f  %f  %f  %f  %f \n", IFutil, IDutil, EXutil, MEMutil, WButil);
     // add the (double) stage_counter/sim_cycle for each 
     // stage following sequence IF ID EX MEM WB		
     fprintf(output,"register values ");
