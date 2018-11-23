@@ -110,7 +110,7 @@ char *regNumberConverter(char *line){
        //cases
         if(line[pos] == 't'){ 
           if(isdigit(line[++pos])){		//check what second char is
-	    if(!((line[pos+1] == ' ') || line[pos+1] == '\0')){return "1";} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
+	    if(!((line[pos+1] == ' ') || line[pos+1] == '\0') || (line[pos+1] == '\n')){return "1";} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
 	    if((line[pos]-'0')<8){
 	      regNum = 8+(line[pos++]-'0'); //register number in int
 	      sprintf(regChar,"%d", regNum);
@@ -133,7 +133,7 @@ char *regNumberConverter(char *line){
 	}
 	else if(line[pos] == 's'){				//check for s0-7 or sp
           if(isdigit(line[++pos])){		//if second char is number
-	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "2";} //check for no extra char
+	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "2";} //check for no extra char
 	    if((line[pos]-'0')<8){
 	      regNum = 16+(line[pos++]-'0'); //register number in int
 	      sprintf(regChar,"%d", regNum);	
@@ -143,7 +143,7 @@ char *regNumberConverter(char *line){
 	    else{return "b";}
 	  }
 	  else if(line[pos++] == 'p'){   //if sp
-	    if(!((line[pos] == ' ') || (line[pos++] == '\0'))){return "3";} //check for no extra char
+	    if(!((line[pos] == ' ') || (line[pos] == '\0') || (line[pos++] == '\n'))){return "3";} //check for no extra char
 	    newLine[newPos++] = '2';
 	    newLine[newPos++] = '9';
 		  }
@@ -151,7 +151,7 @@ char *regNumberConverter(char *line){
 	   }
 	  else if(line[pos] == 'a'){	//if a0-a3
             if(isdigit(line[++pos])){		
-	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "4";} //check for no extra char 
+	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "4";} //check for no extra char 
 	      if((line[pos]-'0')<4){
 	        regNum = 4+(line[pos++]-'0'); //register number in int
 	        sprintf(regChar,"%d", regNum);
@@ -160,7 +160,7 @@ char *regNumberConverter(char *line){
 	      else{return "d";}
 	    }
 	    else if(line[pos] == 't'){
-	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))) {return "17";}
+	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))) {return "17";}
 	      pos++;
 	      newLine[newPos++] = '1';
 	    }
@@ -168,7 +168,7 @@ char *regNumberConverter(char *line){
   	 }
 	 else if(line[pos] == 'v'){ //if v0-v1
            if(isdigit(line[++pos])){		
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "5";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "5";} //check for no extra char
 	     if((line[pos]-'0')<2){
 	       regNum = 2+(line[pos++]-'0'); //register number in int
       	       sprintf(regChar,"%d", regNum);
@@ -180,7 +180,7 @@ char *regNumberConverter(char *line){
 	 }
 	 else if(line[pos] == 'k'){	//if k0-k1
            if(isdigit(line[++pos])){		
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "6";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "6";} //check for no extra char
 	     if((line[pos]-'0')<2){
 	       regNum = 26+(line[pos++]-'0'); //register number in int
 	       sprintf(regChar,"%d", regNum);
@@ -194,7 +194,7 @@ char *regNumberConverter(char *line){
 	   //if doesnt begin with t, s, a, v, or k
 	 else if(line[pos] == 'g'){ //check for gp
 	  if(line[++pos] == 'p'){
-	    if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "7";} //check for no extra char
+	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "7";} //check for no extra char
       	    pos++;
 	    newLine[newPos++] = '2';
 	    newLine[newPos++] = '8';
@@ -203,7 +203,7 @@ char *regNumberConverter(char *line){
 	 }
          else if(line[pos] == 'f'){ //check for fp
 	   if(line[++pos] == 'p'){
-	     if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "8";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "8";} //check for no extra char
 	     pos++;
 	     newLine[newPos++] = '3';
 	     newLine[newPos++] = '0';
@@ -212,7 +212,7 @@ char *regNumberConverter(char *line){
 	 }
 	 else if(line[pos] == 'r'){	//check for ra
 	   if(line[++pos] == 'a'){
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "9";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "9";} //check for no extra char
 	     pos++;
 	     newLine[newPos++] = '3';
 	     newLine[newPos++] = '1';
@@ -223,7 +223,7 @@ char *regNumberConverter(char *line){
 	   if(line[++pos] == 'e'){
 	     if(line[++pos] == 'r'){
 	       if(line[++pos] == 'o'){
-	         if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "10";} //check for no extra char
+	         if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "10";} //check for no extra char
 	         pos++; 
 	         newLine[newPos++] = '0';
 	       }
@@ -235,22 +235,22 @@ char *regNumberConverter(char *line){
 	 }
 	 else if(isdigit(line[pos])){	//check if 0-31
 	   if(isdigit(line[++pos])){
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){ return "11";}
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){ return "11";}
 	     regNum = 10*(line[pos-1]-'0');
 	     regNum += (line[pos]-'0');
 	       if(regNum > 31) return "p";
 	       newLine[newPos++] = line[pos-1];
 	       newLine[newPos++] = line[pos++];
 	     }      
-	   else if((line[pos] == ' ') || (line[pos] == '\0')) {
+	   else if((line[pos] == ' ') || (line[pos] == '\0') || (line[pos] == '\n')) {
              regNum = (line[pos-1]-'0');
 	     newLine[newPos++] = line[pos-1];
 	   }
            else{ return "q";}
 	 }
 	 else{return "r";}			//return error if no matches  
-      }  
-      newLine[newPos++] = line[pos];
+      } 
+	   if(line[pos]!='\n') newLine[newPos++] = line[pos];
     }
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
@@ -305,7 +305,7 @@ struct inst parser(char *line){
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
 while (p != NULL){            //loop through until done
-  printf("p is: %s \n", p);  
+//  printf("p is: %s \n", p);  
     if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
       arg[0] = 1;                       //add is 1
     }
@@ -513,7 +513,6 @@ printf("rt: %d\n", newInst.rt);
 printf("Imm: %d\n", newInst.Imm);
 
 return newInst;
-
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -827,7 +826,10 @@ void WB(){
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
+//char *test = "lw $s5 650($s2)\n";
+//regNumberConverter(progScanner(test));
 
+  
 //////////////////////Initialize variables////////////////////////////  
 
 	//Initialize IFIDLatch
