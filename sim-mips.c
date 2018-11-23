@@ -111,7 +111,7 @@ char *regNumberConverter(char *line){
        //cases
         if(line[pos] == 't'){ 
           if(isdigit(line[++pos])){		//check what second char is
-	    if(!((line[pos+1] == ' ') || line[pos+1] == '\0')){return "1";} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
+	    if(!((line[pos+1] == ' ') || line[pos+1] == '\0') || (line[pos+1] == '\n')){return "1";} //|| (line[pos+1] == '\0')){return "1";} //check for no extra char
 	    if((line[pos]-'0')<8){
 	      regNum = 8+(line[pos++]-'0'); //register number in int
 	      sprintf(regChar,"%d", regNum);
@@ -134,7 +134,7 @@ char *regNumberConverter(char *line){
 	}
 	else if(line[pos] == 's'){				//check for s0-7 or sp
           if(isdigit(line[++pos])){		//if second char is number
-	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "2";} //check for no extra char
+	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "2";} //check for no extra char
 	    if((line[pos]-'0')<8){
 	      regNum = 16+(line[pos++]-'0'); //register number in int
 	      sprintf(regChar,"%d", regNum);	
@@ -144,7 +144,7 @@ char *regNumberConverter(char *line){
 	    else{return "b";}
 	  }
 	  else if(line[pos++] == 'p'){   //if sp
-	    if(!((line[pos] == ' ') || (line[pos++] == '\0'))){return "3";} //check for no extra char
+	    if(!((line[pos] == ' ') || (line[pos] == '\0') || (line[pos++] == '\n'))){return "3";} //check for no extra char
 	    newLine[newPos++] = '2';
 	    newLine[newPos++] = '9';
 		  }
@@ -152,7 +152,7 @@ char *regNumberConverter(char *line){
 	   }
 	  else if(line[pos] == 'a'){	//if a0-a3
             if(isdigit(line[++pos])){		
-	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "4";} //check for no extra char 
+	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "4";} //check for no extra char 
 	      if((line[pos]-'0')<4){
 	        regNum = 4+(line[pos++]-'0'); //register number in int
 	        sprintf(regChar,"%d", regNum);
@@ -161,7 +161,7 @@ char *regNumberConverter(char *line){
 	      else{return "d";}
 	    }
 	    else if(line[pos] == 't'){
-	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))) {return "17";}
+	      if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))) {return "17";}
 	      pos++;
 	      newLine[newPos++] = '1';
 	    }
@@ -169,7 +169,7 @@ char *regNumberConverter(char *line){
   	 }
 	 else if(line[pos] == 'v'){ //if v0-v1
            if(isdigit(line[++pos])){		
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "5";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "5";} //check for no extra char
 	     if((line[pos]-'0')<2){
 	       regNum = 2+(line[pos++]-'0'); //register number in int
       	       sprintf(regChar,"%d", regNum);
@@ -181,7 +181,7 @@ char *regNumberConverter(char *line){
 	 }
 	 else if(line[pos] == 'k'){	//if k0-k1
            if(isdigit(line[++pos])){		
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "6";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "6";} //check for no extra char
 	     if((line[pos]-'0')<2){
 	       regNum = 26+(line[pos++]-'0'); //register number in int
 	       sprintf(regChar,"%d", regNum);
@@ -195,7 +195,7 @@ char *regNumberConverter(char *line){
 	   //if doesnt begin with t, s, a, v, or k
 	 else if(line[pos] == 'g'){ //check for gp
 	  if(line[++pos] == 'p'){
-	    if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "7";} //check for no extra char
+	    if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "7";} //check for no extra char
       	    pos++;
 	    newLine[newPos++] = '2';
 	    newLine[newPos++] = '8';
@@ -204,7 +204,7 @@ char *regNumberConverter(char *line){
 	 }
          else if(line[pos] == 'f'){ //check for fp
 	   if(line[++pos] == 'p'){
-	     if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "8";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "8";} //check for no extra char
 	     pos++;
 	     newLine[newPos++] = '3';
 	     newLine[newPos++] = '0';
@@ -213,7 +213,7 @@ char *regNumberConverter(char *line){
 	 }
 	 else if(line[pos] == 'r'){	//check for ra
 	   if(line[++pos] == 'a'){
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){return "9";} //check for no extra char
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){return "9";} //check for no extra char
 	     pos++;
 	     newLine[newPos++] = '3';
 	     newLine[newPos++] = '1';
@@ -224,7 +224,7 @@ char *regNumberConverter(char *line){
 	   if(line[++pos] == 'e'){
 	     if(line[++pos] == 'r'){
 	       if(line[++pos] == 'o'){
-	         if(!((line[pos+1] == ' ') || (line[pos++ +1] == '\0'))){return "10";} //check for no extra char
+	         if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos++ +1] == '\n'))){return "10";} //check for no extra char
 	         pos++; 
 	         newLine[newPos++] = '0';
 	       }
@@ -236,22 +236,22 @@ char *regNumberConverter(char *line){
 	 }
 	 else if(isdigit(line[pos])){	//check if 0-31
 	   if(isdigit(line[++pos])){
-	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0'))){ return "11";}
+	     if(!((line[pos+1] == ' ') || (line[pos+1] == '\0') || (line[pos+1] == '\n'))){ return "11";}
 	     regNum = 10*(line[pos-1]-'0');
 	     regNum += (line[pos]-'0');
 	       if(regNum > 31) return "p";
 	       newLine[newPos++] = line[pos-1];
 	       newLine[newPos++] = line[pos++];
 	     }      
-	   else if((line[pos] == ' ') || (line[pos] == '\0')) {
+	   else if((line[pos] == ' ') || (line[pos] == '\0') || (line[pos] == '\n')) {
              regNum = (line[pos-1]-'0');
 	     newLine[newPos++] = line[pos-1];
 	   }
            else{ return "q";}
 	 }
 	 else{return "r";}			//return error if no matches  
-      }  
-      newLine[newPos++] = line[pos];
+      } 
+	   if(line[pos]!='\n') newLine[newPos++] = line[pos];
     }
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
@@ -528,317 +528,6 @@ return newInst;
 
 
 }
-/*
-
-              
-/////////////////////////////////////////////////////////////////////
-///////////////////////IF////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////
-//Fetches instruction from instruction memory
-//If there is a branch that is unresolved finish resolving the branch before continuing
-void IF(){
-  printf("IF\n");
-  static int CycleCount = 0;
-
-  if(CycleCount == 0) CycleCount = c;
-	if(CycleCount == 1){
-	  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
-	    IFIDLatch = instMem[pgm_c/4];          
-		 	if(IFIDLatch.opcode == 7){    
-			  branchUnresolved = 1;
-			}
-			if(IFIDLatch.opcode == 8) stopReceive=1;
-			pgm_c +=4;
-			IFcount++;
-		}
-	}
-	if(CycleCount>0) CycleCount--;
-printf("\nIF!");
-printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
-printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
-printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
-
-}
-
-
-////////////////////////////////////////////////////////////////////
-//////////////////////////ID////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-//For each type of instruction check the appropriate raw hazard
-//If there is a raw hazard do nothing 
-//If there is no raw hazard continue and set the appropriate raw hazard 
-//flag for the register that is being calculated 
-//Put in the values that are in the registers and set them equal to the 
-//output instructions rt and rs (depending on instruction opcode)
-//Check that the IDEXLatch is empty and if it is put the instruction 
-//into the latch, and set the IFIDLatch to empty
-
-void ID(){
-  printf("ID\n");
-	struct inst in = IFIDLatch;
-	struct inst out = in;
-	printf("in opcode: %d\n", in.opcode);
-	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
-		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			rawHaz[in.rd] = 1; 		
-			out.rt = reg[in.rt];
-			out.rs = reg[in.rs];
-			if(IDEXLatch.opcode == 0){                                  
-				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = out;
-				IDcount++;
-			}
-		}
-  }
-  else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
-    if(!rawHaz[in.rs]){
-			rawHaz[in.rt] = 1;
-			out.rs = reg[in.rs];
-		  if(IDEXLatch.opcode == 0){
-			 IFIDLatch.opcode = 0;
-			 IDEXLatch = out;
-			 IDcount++;
-			} 
-		} 
-  }
-  else if(in.opcode == 5){          //SW
-     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			rawHaz[in.rt] = 1;
-			out.rs = reg[in.rs];
-			if(IDEXLatch.opcode == 0){                                  
-				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = out;
-				IDcount++;
-			}
-		}
-
-  }
-  else if(in.opcode == 7){ //beq	
-     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			branchUnresolved = 1;                                      
-			out.rs = reg[in.rs];
-			out.rt = reg[in.rt];
-			if(IDEXLatch.opcode == 0){                                  
-				IFIDLatch.opcode = 0;                                     
-				IDEXLatch = out;
-				IDcount++;
-			}
-		}
-  }
-  else{
-	 //halt simulation
-	 if(in.opcode == 8){
-		stopReceive = 1;
-		if(IDEXLatch.opcode == 0){
-		  IDEXLatch.opcode = 8;
-		}
-	 }
-      //Return error // assertion
-	 else if(in.opcode != 0){
-	 printf("ID: OPCODE ERROR\n");
-	 assert(in.opcode<8 || in.opcode>0);
-	 exit(0);
-	 }
-  }
-	printf("\nID!: \n");
-	printf("\nIDEXLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IDEXLatch.opcode, IDEXLatch.rs, IDEXLatch.rt, IDEXLatch.rd, IDEXLatch.Imm);
-
-
-}
-
-
-////////////////////////////////////////////////////////////////////
-//////////////////////////EX////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-//When the previous instruction has finished the EX stage (when EXCycleCount = 0)
-//Do the correct operations based on the instruction and set how many cycles it should take
-//Then every time EX runs it will decrement the EXCycleCount by 1 
-//When the counter = 1 you will have finished the operation and set the output to the correct latch
-//based on if it needs the MEM stage or not
-void EX(){
-
-  struct inst in;
-  printf("EX\n");
-	static int CycleCount = 0;
-	if(CycleCount == 0){
-		in = IDEXLatch;
-		EXout = in;
-		if(in.opcode == 1){       //add
-			EXout.rs = in.rs + in.rt;
-			CycleCount = n;
-			EXcount++;
-		}
-		else if(in.opcode == 2){ //sub
-			EXout.rs = in.rs - in.rt;
-			CycleCount = n;
-			EXcount++;
-		}
-		else if(in.opcode == 3){  //mul
-			EXout.rs = in.rt*in.rs;
-			CycleCount = m;
-			EXcount++;
-		} 
-		else if(in.opcode == 4){  //lw
-			EXout.rs = in.rs + in.Imm;         
-			CycleCount = n;
-			EXcount++;
-		}
-		else if(in.opcode == 5){  //sw
-			EXout.rs = in.rs + in.Imm;
-			CycleCount = n;
-			EXcount++;
-		}
-		else if(in.opcode == 6){  //addi
-			EXout.rs = in.rs + in.Imm;
-			CycleCount = n;
-			EXcount++;
-		}
-		else if(in.opcode == 7){  //bq
-		  	//printf("pgm c: %d \n", pgm_c);
-			if(in.rs == in.rt) pgm_c += 4*in.Imm;
-
-			CycleCount = n;
-			branchUnresolved = 0;
-			EXcount++;
-		}
-		else{
-      //Return error // assertion
-		  if(in.opcode == 8){
-				stopReceive = 1;
-				if((EXMEMLatch.opcode == 0) && (MEMWBLatch.opcode == 0)){
-				  MEMWBLatch.opcode = 8;
-				}
-			}
-			else if(in.opcode != 0){
-			  printf("EX: OPCODE ERROR\n");
-		     assert(in.opcode<8 && in.opcode>0);
-		     exit(0);
-			}	
-		}
-	}
-	if(CycleCount == 1){
-		if((EXout.opcode == 5) || (EXout.opcode == 4)){
-
-			if(EXMEMLatch.opcode == 0){
-				EXMEMLatch = EXout;
-			   EXcount++;
-				IDEXLatch.opcode = 0;
-				CycleCount--;
-
-				printf("\n EX!");
-printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
-
-			} 
-		} 
-	  else{ 
-			if(MEMWBLatch.opcode == 0){
-			  MEMWBLatch = EXout;
-				EXcount++;
-				IDEXLatch.opcode = 0;
-				CycleCount--;
-
-			} 
-              } 
-				printf("\n EX!");
-		  	  EXcount++;
-			  IDEXLatch.opcode = 0;
-			  CycleCount--;
-			  printf("\n EX!");
-	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
-
-		} 
-  
-	else{
-		if(CycleCount > 0)		CycleCount--;
-	}
-////////////////////////
-//printf("pgmc at end is: %d \n", pgm_c);
-
-}
-
-////////////////////////////////////////////////////////////////////
-/////////////////////////MEM////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-void MEM(){
-  printf("MEM\n");
-	static int CycleCount = 0;
-	if(CycleCount == 0){
-		struct inst in = EXMEMLatch;
-		MEMout = in;
-		if(in.opcode == 4){  // lw
-			printf("lw - in.rs: %d\n", in.rs);
-			MEMout.rs = DMem[in.rs];
-			EXMEMLatch.opcode = 0;
-			CycleCount = c;
-		}
-		else if(in.opcode == 5){  //sw
-			printf("sw - in.rs: %d\n",in.rs);
-			DMem[reg[in.rt]] = in.rs;
-			EXMEMLatch.opcode = 0;
-			printf("DMem: %d \n",DMem[reg[in.rt]]);
-			CycleCount = c;
-		}
-		else{
-		  //halt simulation
-		  if(in.opcode == 8) {
-			 stopReceive = 1;
-			 EXMEMLatch.opcode = 1;
-			 MEMWBLatch.opcode = 8;
-		  }
-		  //invalid opcode
-		  else if(in.opcode != 0){
-			 printf("MEM: INVALID OPCODE\n");
-			 assert(in.opcode == 4 || in.opcode == 5);
-			 exit(0);
-		  }	
-		}
-	}
-	if(CycleCount == 1){
-		MEMWBLatch = MEMout;
-		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
-		EXMEMLatch.opcode = 0;
-		CycleCount--;
-	}
-	else{
-		CycleCount--;
-	}
-}
-                    
-
-/////////////////////////////////////////////////////////////////////////////
-//////////////////////////////WB/////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-void WB(){
-  printf("WB\n");
-	struct inst in = MEMWBLatch;
-	printf("wb opcode %d\n", in.opcode);
-  if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul  
-    reg[in.rd] = in.rs;
-		rawHaz[in.rd] = 0;
-		WBcount++;
-		MEMWBLatch.opcode = 0;
-		printf("reg %d: %d\n", in.rd, reg[in.rd]);
-  }
-	else if((in.opcode == 5) || (in.opcode == 6)){   //addi,sw
-		reg[in.rt] = in.rs;
-		rawHaz[in.rt] = 0;
-		WBcount++;
-		MEMWBLatch.opcode = 0;
-		printf("reg %d: %d\n", in.rt, reg[in.rt]);
-	}
-  else{
-    //halt simulation
-    if(in.opcode == 8) halt = 1;
-	 //Return error // assertion
-	 else if(in.opcode != 0){
-	   printf("WB: OPCODE ERROR\n");
-	   assert(in.opcode<7 || in.opcode>0);
-	   exit(0);
-	 }
-  }
-}
-
-*/
 
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
@@ -1151,7 +840,10 @@ void WB(){
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
+//char *test = "lw $s5 650($s2)\n";
+//regNumberConverter(progScanner(test));
 
+  
 //////////////////////Initialize variables////////////////////////////  
 //	IFIDLatch = {0,0,0,0,0};
 	IFIDLatch.opcode = 0;
