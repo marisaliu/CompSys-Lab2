@@ -580,6 +580,8 @@ printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.
 void ID(){
 	struct inst in = IFIDLatch;
 	struct inst out = in;
+	printf("in.opcode: %d\n", in.opcode);
+	printf("IDEXLatch.opcode %d\n", IDEXLatch.opcode);
 	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
     
 		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
@@ -605,13 +607,17 @@ void ID(){
 		} 
   }
   else if(in.opcode == 5){          //SW
+		printf("rawHaz[in.rs %d\n", rawHaz[in.rs]);
+		printf("rawHaz[in.rt] %d\n", rawHaz[in.rt]);
      if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			rawHaz[in.rt] = 1;
-			out.rs = reg[in.rs];
-			if(IDEXLatch.opcode == 0){                                  
+			printf("after if\n");
+		if(IDEXLatch.opcode == 0){                                  
+				rawHaz[in.rt] = 1;
+				out.rs = reg[in.rs];
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
-				IDcount++;
+				printf("HEELP");
+			IDcount++;
 			}
 		}
 
@@ -723,7 +729,10 @@ void EX(){
 			  EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
-				printf("\n EX!");
+	
+	
+	
+	printf("\n EX!");
 printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
 
 
@@ -768,6 +777,7 @@ void MEM(){
 		else if(in.opcode == 5){  //sw
 			printf("sw - in.rs: %d\n",in.rs);
 			DMem[reg[in.rt]] = in.rs;
+			rawHaz[in.rt] = 0;
 			printf("DMem: %d \n",DMem[reg[in.rt]]);
 			CycleCount = c;
 		}
@@ -822,8 +832,9 @@ void WB(){
 		MEMWBLatch.opcode = 0;
 		printf("reg %d: %d\n", in.rd, reg[in.rd]);
   }
-	else if((in.opcode == 4) || (in.opcode == 6)){   //addi,sw
+	else if((in.opcode == 4) || (in.opcode == 6)){   //addi,lw
 		reg[in.rt] = in.rs;
+		printf("in.rt %d \n", in.rt);
 		rawHaz[in.rt] = 0;
 		WBcount++;
 		MEMWBLatch.opcode = 0;
