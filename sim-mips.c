@@ -69,7 +69,7 @@ struct inst
 //Input a string and get rid of any extra punction, spaces or parentheses///
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
-  printf("Input line: %s \n", currentLine);
+//  printf("Input line: %s \n", currentLine);
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
@@ -84,14 +84,14 @@ for(char *p = currentLine; *p; ++p){
 }
   currentLine[pos]='\0';
 
-printf("Removed punctuation: %s \n", currentLine);
+//printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
   int x;
   for(i=x=0; currentLine[i]; ++i){
     if(!isspace(currentLine[i]) || (i > 0 && !isspace(currentLine[i-1]))) currentLine[x++] = currentLine[i];
   }
   currentLine[x] = '\0';
-  printf("Fixed spaces: %s\n", currentLine);
+  //printf("Fixed spaces: %s\n", currentLine);
   return currentLine;
 }
 
@@ -101,13 +101,13 @@ printf("Removed punctuation: %s \n", currentLine);
 //start with $ to numbers and returns error if invalid register/////////////
 ///////////////////////////////////////////////////////////////////////////
 char *regNumberConverter(char *line){
-  printf("Reading in: %s \n", line);
+  //printf("Reading in: %s \n", line);
   char *newLine = (char *)malloc(strlen(line)*sizeof(char));
   char regChar[3];
   int regNum;
   int pos=0;
   int newPos=0;
-  printf("reg in: %s\n", line);
+  //printf("reg in: %s\n", line);
   for(pos=0; pos<strlen(line); pos++){
     if(line[pos] == '$'){ //do nothing until hit a $
       pos++;
@@ -260,7 +260,7 @@ char *regNumberConverter(char *line){
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
 
-    printf("After regNumberConverter: %s\n", newNewLine);
+    //printf("After regNumberConverter: %s\n", newNewLine);
     return newNewLine;
 }
 
@@ -961,7 +961,7 @@ void main (int argc, char *argv[]){
   }
 ///////////////////////Run mips instructions through pipleine///////////////////////////
 
-  /*
+  
   struct inst finalInst;
 	finalInst.opcode = 8;
 	instMem[instIndex++] = finalInst;
@@ -1009,7 +1009,6 @@ void main (int argc, char *argv[]){
 
 	return 0;
 
-*/
 
 
 }
