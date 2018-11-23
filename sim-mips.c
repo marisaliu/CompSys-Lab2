@@ -80,11 +80,10 @@ char *progScanner(char* currentLine){
   int l=0, r=0;
 
 for(char *p = currentLine; *p; ++p){
-  if(*p == '(') {cp[0]=1; l++;}
-
-  if(*p == ')'){
+  if(*p == '(') {cp[0]=1; l++;}                 //if ( increase left counter
+  if(*p == ')'){                             //if ) increase right counter
     r++;
-    if (cp[0]!=0) {cp[1]=2;}
+    if (cp[0]!=0) {cp[1]=2;}                         //if putting ) before a ( throw error
     else Error_ParanthesesMismatch();
   }
 
@@ -99,7 +98,7 @@ for(char *p = currentLine; *p; ++p){
 }
   currentLine[pos]='\0';
 
-if(l != r) Error_ParanthesesMismatch();
+if(l != r) Error_ParanthesesMismatch();                //if left and right don't match, throw error
 
 //printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
