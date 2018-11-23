@@ -989,15 +989,15 @@ void main (int argc, char *argv[]){
 		ID();
 		IF();
 		sim_cycle++;
-		if(sim_mode){
-		  for(int i=1; i<32; i++){
-			 printf("Register %d: %d\n", i, reg[i]);
-		  }
-		  printf("Cycle: %d\nPC: %d\nPress enter to advance\n", sim_cycle, pgm_c);
-		  while(getchar()!='\n'){
-			 getchar();
-		  }
-		}
+		if(sim_mode==1){
+			printf("cycle: %d register value: ",sim_cycle);
+			for (i=1;i<REG_NUM;i++){
+				printf("%d  ",reg[i]);
+			}
+			printf("program counter: %d\n",pgm_c);
+			printf("press ENTER to continue\n");
+			while(getchar() != '\n');
+	}
 	} 
 
 printf("EXCOUNT: %d\n", sim_cycle);
