@@ -107,7 +107,7 @@ if(l != r) Error_ParanthesesMismatch();                //if left and right don't
     if(!isspace(currentLine[i]) || (i > 0 && !isspace(currentLine[i-1]))) currentLine[x++] = currentLine[i];
   }
   currentLine[x] = '\0';
-  //printf("Fixed spaces: %s\n", currentLine);
+  printf("Fixed spaces: %s\n", currentLine);
   return currentLine;
 }
 
@@ -287,7 +287,7 @@ char *regNumberConverter(char *line){
   
     char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
 
-    //printf("After regNumberConverter: %s\n", newNewLine);
+    printf("After regNumberConverter: %s\n", newNewLine);
     return newNewLine;
 }
 
@@ -337,7 +337,7 @@ struct inst parser(char *line){
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
 while (p != NULL){            //loop through until done
-//  printf("p is: %s \n", p);  
+ //printf("p is: %s<\n", p);  
     if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
       arg[0] = 1;                       //add is 1
     }
@@ -364,76 +364,64 @@ while (p != NULL){            //loop through until done
     //  printf("size of p is: %d \n", strlen(p));
       int isD = 0, i;   
       for(i=0; i < ll; i++){
-//	printf("%c \n", p[i]);
-	if(p[i] == '\n') {
-	  isD=3;
+//	     printf("%c \n", p[i]);
+	     if((p[i] == '\n') || (p[i] == '\0')) {
+	       isD=3;
 //	  printf("derp");
-	}
-	else if(isdigit(p[i])){ 
-	  isD = 1;
-	}                   //check if each character is a digit
-	else{
-	 isD = 0;             //there is a character that is not a digit, so break
-	 break;
-	}
-
-       }
+	     }
+	     else if(isdigit(p[i])){ 
+	       isD = 1;
+	     }                   //check if each character is a digit
+	     else{
+//	       printf("this not %d<-\n", p[i]);
+			 isD = 0;             //there is a character that is not a digit, so break
+	       break;
+	     }
+      }
 	
-  //  printf("isD: %d \n", isD);  
-    if(isD == 3){                     //if there is a \n
-	if(ll-1 <= 5){	
-        char withoutn[ll-1];	
-	int z;
-//	for(z=0; z < ll-1; z++) printf("withoutn is: %d ", withoutn[z]);
-//	printf("\n\n");	
-	int j;
-	  for(j=0;j < (ll-1);j++){
-//	  printf("isDigit: %d", isdigit(p[j]));
-	   if(isdigit(p[j]) != 0)  
-	    withoutn[j] = p[j];
-      	   else{
-	     //if((((arg[0]==4)  || (arg[0]==5)) && (c==2)) || (((arg[0]==6)  || (arg[0]==7)) && (c==3))){
-	     //  Error_ImmediateField();
-	     //}
-	     //else{
-	     //printf("derp");
-	     Error_InvalidRegister();                                 //checks if any of the last characters are not digits
-	     //}
-	   }
+   if(isD == 3){                     //if there is a \n
+	  if(ll-1 <= 5){	
+       char withoutn[ll-1];	
+	    int z;
+	    int j;
+	    for(j=0;j < (ll-1);j++){
+	      if(isdigit(p[j]) != 0)  
+	        withoutn[j] = p[j];
+      	  else{
+	          Error_InvalidRegister();                                 //checks if any of the last characters are not digits
+	        }
 
+	    }
+	    arg[a] = atoi(withoutn);
+       memset(withoutn, 0, (ll-1));
 	  }
-//	 printf("atoi: %d \n", atoi(withoutn)); 
-	  arg[a] = atoi(withoutn);
-        memset(withoutn, 0, (ll-1));
-	}
-	else{
-	  printf("no\n");
-	Error_ImmediateField();
-        }
-    
-    }
-    else if(isD == 1){        //if number, convert into int to put into int array
-          if(ll == 1){
+	  else{
+	    printf("no\n");
+	    Error_ImmediateField();
+     } 
+   }
+   else if(isD == 1){        //if number, convert into int to put into int array
+     if(ll == 1){
 	    arg[a] = p[0] - '0';
 	  }
 	  else if(ll <= 5){           //arugment is less than 5 characters (65535 is 5 characters)
-          arg[a] = atoi(p);
+       arg[a] = atoi(p);
 	  }
 	  else{
 	    printf("there\n");
-		Error_ImmediateField();                //throw immediate field error 
+		 Error_ImmediateField();                //throw immediate field error 
 	  }
 	  a++;                           //increment counter for index
-      }
-      else                                   //not a number
-      {
-	if((((arg[0]==4)  || (arg[0]==5)) && (c==2)) || (((arg[0]==6)  || (arg[0]==7)) && (c==3))){
-	     Error_ImmediateField();
-	   }
-	   else{
-	     printf("nani");
-	     Error_InvalidRegister();                                 //checks if any of the last characters are not digits
-	   }
+   }
+   else{                                   //not a number
+	  if((((arg[0]==4)  || (arg[0]==5)) && (c==2)) || (((arg[0]==6)  || (arg[0]==7)) && (c==3))){
+	    printf("this is %d\n", isD); 
+	    Error_ImmediateField();
+	  }
+	  else{
+	    printf("nani");
+	    Error_InvalidRegister();                                 //checks if any of the last characters are not digits
+	  }
 
 	//Error_InvalidRegister();      //return not valid number error(or missing the $, ex. s0 instead of $s0 so it didn't get converted)
       }
@@ -503,6 +491,7 @@ while (p != NULL){            //loop through until done
         }
     }
     else{
+		printf("aaaaa\n");
 	Error_ImmediateField();                   //return error, either too small or bigger than largest unsigned 16-bit number
     }
     }
@@ -541,6 +530,7 @@ while (p != NULL){            //loop through until done
       	newInst.Imm = arg[3];
       }
       else{
+		  printf("bbbbbb\n");
 	Error_ImmediateField();                //return too large immediate field
       }
     }
@@ -587,12 +577,12 @@ void IF(){
 		CycleCount--;
 		IFcount++;
 	}
-/*
+
 printf("\nIFcount %d", IFcount);
 printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
 printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
 printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
-*/
+
 }
 
 
@@ -635,7 +625,7 @@ void ID(){
 			 IDEXLatch = out;
 			 IDcount++;
 			} 
-		} else printf("hazard"); 
+		} else 			printf("ID rawHaz addi: %d\n", rawHaz[in.rt]);
   }
   else if(in.opcode == 5){          //SW
 		printf("rawHaz[in.rs %d\n", rawHaz[in.rs]);
@@ -680,10 +670,10 @@ void ID(){
 	 exit(0);
 	 }
   }
-/*	printf("\nID!: ");
+	printf("\nID!: ");
 	printf("\nIDEXLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IDEXLatch.opcode, IDEXLatch.rs, IDEXLatch.rt, IDEXLatch.rd, IDEXLatch.Imm);
 
-*/
+
 }
 
 
@@ -753,26 +743,29 @@ void EX(){
 			}
 		}
 	}
+	printf("\n EX!");
+	printf("\nEX out \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXout.opcode, EXout.rs, EXout.rt, EXout.rd, EXout.Imm);
+
 	if(CycleCount == 1){
-		if((EXout.opcode == 5) || (EXout.opcode == 4)){
+	//	if((EXout.opcode == 5) || (EXout.opcode == 4)){
 			if(EXMEMLatch.opcode == 0){
 				EXMEMLatch = EXout;
 			   if(EXout.opcode != 8) EXcount++;
 				IDEXLatch.opcode = 0;
 				CycleCount--;
 			}
-		}
-	  else{
+	//	}
+	/*  else{
 			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = EXout;
 				if(EXout.opcode != 8) EXcount++;
 				IDEXLatch.opcode = 0;
-				CycleCount--;
+				CycleCount--;*/
 /*				printf("\n EX!");
 	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
 */
-			}	
-    }
+	//		}	
+   // }
 	}
 	else{
 		if(CycleCount > 0){
@@ -792,17 +785,17 @@ void MEM(){
 		struct inst in = EXMEMLatch;
 		MEMout = in;
 
-		printf("MEM.opcode: %d\n",in.opcode);
+//		printf("MEM.opcode: %d\n",in.opcode);
 		if(in.opcode == 4){  // lw
-			printf("lw - in.rs: %d\n", in.rs);
+//			printf("lw - in.rs: %d\n", in.rs);
 			MEMout.rs = DMem[in.rs];
 			CycleCount = c;
 		}
 		else if(in.opcode == 5){  //sw
-			printf("sw - in.rs: %d\n",in.rs);
+//			printf("sw - in.rs: %d\n",in.rs);
 			DMem[reg[in.rt]] = in.rs;
 			rawHaz[in.rt] = 0;
-			printf("DMem: %d \n",DMem[reg[in.rt]]);
+//			printf("DMem: %d \n",DMem[reg[in.rt]]);
 			CycleCount = c;
 		}
 		else{
@@ -815,10 +808,14 @@ void MEM(){
 
 			}
 		  //invalid opcode
-		  else if(in.opcode != 0){
+		  else if((in.opcode<0) || (in.opcode>8)){
 			 printf("MEM: INVALID OPCODE\n");
 			 assert(in.opcode == 4 || in.opcode == 5);
 			 exit(0);
+		  }
+		  else{
+			 MEMWBLatch = in;
+			 CycleCount = c;
 		  }
 		}
 	}
@@ -844,25 +841,25 @@ void MEM(){
 //////////////////////////////WB/////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 void WB(){
-/*  printf("\nWB");
+  printf("\nWB");
 	printf("\nMEWBMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", MEMWBLatch.opcode, MEMWBLatch.rs, MEMWBLatch.rt, MEMWBLatch.rd, MEMWBLatch.Imm);
-*/
 
+printf("WB: rawHaz[in.rs] %d, rawHaz[in.rt] %d\n", rawHaz[MEMWBLatch.rs], rawHaz[MEMWBLatch.rt]);
 	struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
     reg[in.rd] = in.rs;
 		rawHaz[in.rd] = 0;
 		WBcount++;
 		MEMWBLatch.opcode = 0;
-		printf("reg %d: %d\n", in.rd, reg[in.rd]);
+		printf("WB: reg %d: %d\n", in.rd, reg[in.rd]);
   }
 	else if((in.opcode == 4) || (in.opcode == 6)){   //addi,lw
 		reg[in.rt] = in.rs;
-		printf("in.rt %d \n", in.rt);
+		printf("WB: in.rt %d \n", in.rt);
 		rawHaz[in.rt] = 0;
 		WBcount++;
 		MEMWBLatch.opcode = 0;
-		printf("reg %d: %d\n", in.rt, reg[in.rt]);
+		printf("WB: reg %d: %d\n", in.rt, reg[in.rt]);
 	}
 	else if(in.opcode == 5 || in.opcode == 7){
 		MEMWBLatch.opcode = 0;
