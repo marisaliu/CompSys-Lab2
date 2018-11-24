@@ -617,10 +617,10 @@ void ID(){
 	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
     
 		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			rawHaz[in.rd] = 1; 		
-			out.rt = reg[in.rt];
-			out.rs = reg[in.rs];
 			if(IDEXLatch.opcode == 0){                                  
+				rawHaz[in.rd] = 1; 		
+				out.rt = reg[in.rt];
+				out.rs = reg[in.rs];
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
 				IDcount++;
@@ -630,35 +630,33 @@ void ID(){
   }
   else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
     if(!rawHaz[in.rs]){
-			rawHaz[in.rt] = 1;
-			out.rs = reg[in.rs];
-		  if(IDEXLatch.opcode == 0){
+		 if(IDEXLatch.opcode == 0){
+			 rawHaz[in.rt] = 1;
+			 out.rs = reg[in.rs];
 			 IFIDLatch.opcode = 0;
 			 IDEXLatch = out;
 			 IDcount++;
 			} 
 		} else printf("hazard"); 
   }
-  else if(in.opcode == 5){          //SW
-		printf("rawHaz[in.rs %d\n", rawHaz[in.rs]);
-		printf("rawHaz[in.rt] %d\n", rawHaz[in.rt]);
-     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-		if(IDEXLatch.opcode == 0){                                  
+  else if(in.opcode == 5){          //SW	
+    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+			if(IDEXLatch.opcode == 0){                                  
 				rawHaz[in.rt] = 1;
 				out.rs = reg[in.rs];
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
-			IDcount++;
+				IDcount++;
 			}
 		} else printf("hazard");
 
   }
   else if(in.opcode == 7){ //beq	
-     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			branchUnresolved = 1;                                      
-			out.rs = reg[in.rs];
-			out.rt = reg[in.rt];
+    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 			if(IDEXLatch.opcode == 0){                                  
+				branchUnresolved = 1;                                      
+				out.rs = reg[in.rs];
+				out.rt = reg[in.rt];
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
 				IDcount++;
@@ -927,6 +925,11 @@ void main (int argc, char *argv[]){
   int i;//for loop counter
   pgm_c=0;//program counter
   long sim_cycle=0;//simulation cycle counter
+  float IFutil;
+	float IDutil;
+	float EXutil;
+	float MEMutil;
+	float WButil;
   halt = 0;
   rawHaz[32] = 0;
   reg[32] = 0; 
@@ -992,9 +995,7 @@ void main (int argc, char *argv[]){
 
   fgets(traceEntry, 100, input);                 //get first line
   while(strcmp(traceEntry, hs) != 0){                  //if it doesn't reach haltSimulation
-  printf("String input is %s \n", traceEntry);    
-  		//progscannner
-		//regnumberconverter  
+//  printf("String input is %s \n", traceEntry);      
 		instMem[instIndex++] = parser(regNumberConverter(progScanner(traceEntry)));
     fgets(traceEntry, 100, input);
   }
@@ -1027,11 +1028,6 @@ void main (int argc, char *argv[]){
 printf("EXCOUNT: %d\n", sim_cycle);
 
   //output statistics in batch mode
-	float IFutil;
-	float IDutil;
-	float EXutil;
-	float MEMutil;
-	float WButil;
 	IFutil = (float) IFcount/ sim_cycle;
 	IDutil = (float) IDcount/sim_cycle;
 	EXutil = (float) EXcount/sim_cycle;
@@ -1052,8 +1048,8 @@ printf("EXCOUNT: %d\n", sim_cycle);
   }
    
   //close input and output files at the end of the simulation
-//	fclose(input);
-//	fclose(output);
+	fclose(input);
+	fclose(output);
 
 	return 0;
 }
