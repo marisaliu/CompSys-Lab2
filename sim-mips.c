@@ -569,21 +569,23 @@ void IF(){
   static int CycleCount = 0;
 
   if(CycleCount == 0) CycleCount = c;
-	  if(CycleCount == 1){
-		  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
-			   IFIDLatch = instMem[pgm_c/4];          
-		   	if(IFIDLatch.opcode == 7){    
-				  branchUnresolved = 1;
-			   }
-				if(IFIDLatch.opcode == 8) stopReceive=1;
-			   else{
-				  pgm_c +=4;
-			     IFcount++;
-			     CycleCount--;
-				}
+  if(CycleCount == 1){
+	  if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
+			IFIDLatch = instMem[pgm_c/4];          
+		  if(IFIDLatch.opcode == 7){    
+			  branchUnresolved = 1;
+			}
+			if(IFIDLatch.opcode == 8) stopReceive=1;
+			else{
+		//		printf("IF\n");
+				pgm_c +=4;
+			  IFcount++;
+			  CycleCount--;
+			}
 		}
 	}
-	if(CycleCount>0){
+	else if(CycleCount>0){
+	 // printf("CycleCount: %d\n", CycleCount);
 		CycleCount--;
 		IFcount++;
 	}
@@ -610,8 +612,8 @@ printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.
 void ID(){
 	struct inst in = IFIDLatch;
 	struct inst out = in;
-	printf("in.opcode: %d\n", in.opcode);
-	printf("IDEXLatch.opcode %d\n", IDEXLatch.opcode);
+//	printf("in.opcode: %d\n", in.opcode);
+//	printf("IDEXLatch.opcode %d\n", IDEXLatch.opcode);
 	if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul  
     
 		if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
@@ -641,13 +643,11 @@ void ID(){
 		printf("rawHaz[in.rs %d\n", rawHaz[in.rs]);
 		printf("rawHaz[in.rt] %d\n", rawHaz[in.rt]);
      if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
-			printf("after if\n");
 		if(IDEXLatch.opcode == 0){                                  
 				rawHaz[in.rt] = 1;
 				out.rs = reg[in.rs];
 				IFIDLatch.opcode = 0;                                     
 				IDEXLatch = out;
-				printf("HEELP");
 			IDcount++;
 			}
 		} else printf("hazard");
@@ -792,7 +792,7 @@ void MEM(){
 		struct inst in = EXMEMLatch;
 		MEMout = in;
 
-		printf("MEM.opcode: %d\n",in.opcode);
+	//	printf("MEM.opcode: %d\n",in.opcode);
 		if(in.opcode == 4){  // lw
 			printf("lw - in.rs: %d\n", in.rs);
 			MEMout.rs = DMem[in.rs];
@@ -854,15 +854,15 @@ void WB(){
 		rawHaz[in.rd] = 0;
 		WBcount++;
 		MEMWBLatch.opcode = 0;
-		printf("reg %d: %d\n", in.rd, reg[in.rd]);
+	//	printf("reg %d: %d\n", in.rd, reg[in.rd]);
   }
 	else if((in.opcode == 4) || (in.opcode == 6)){   //addi,lw
 		reg[in.rt] = in.rs;
-		printf("in.rt %d \n", in.rt);
+//		printf("in.rt %d \n", in.rt);
 		rawHaz[in.rt] = 0;
 		WBcount++;
 		MEMWBLatch.opcode = 0;
-		printf("reg %d: %d\n", in.rt, reg[in.rt]);
+	//	printf("reg %d: %d\n", in.rt, reg[in.rt]);
 	}
 	else if(in.opcode == 5 || in.opcode == 7){
 		MEMWBLatch.opcode = 0;
