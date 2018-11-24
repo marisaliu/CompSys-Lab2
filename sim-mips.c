@@ -753,14 +753,20 @@ void MEM(){
 		if(in.opcode == 4){  // lw
 //			printf("lw - in.rs: %d\n", in.rs);
 			MEMout.rs = DMem[in.rs];
-			CycleCount = c;
-		}
+			if(MEMWBLatch.opcode == 0){
+			  MEMWBLatch = MEMout; 
+			  CycleCount = c;
+			}
+	   }
 		else if(in.opcode == 5){  //sw
 //			printf("sw - in.rs: %d\n",in.rs);
 			DMem[reg[in.rt]] = in.rs;
 			rawHaz[in.rt] = 0;
 //			printf("DMem: %d \n",DMem[reg[in.rt]]);
-			CycleCount = c;
+			if(MEMWBLatch.opcode == 0){
+			  MEMWBLatch = MEMout;
+			  CycleCount = c;
+			}
 		}
 		else{
 		  //halt simulation
@@ -824,7 +830,7 @@ void WB(){
 	 MEMWBLatch.opcode = 0;
 //	 printf("WB: reg %d: %d\n", in.rt, reg[in.rt]);
   }
-  else if(in.opcode == 5 || in.opcode == 7){
+  else if(in.opcode == 5 || in.opcode == 7){  //sw beq
 	 MEMWBLatch.opcode = 0;
   }
   else{
