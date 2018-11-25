@@ -15,11 +15,13 @@
 #define BATCH 0
 #define REG_NUM 32
 
+////////////Enumeration type describing opcodes////////////
+enum instr{ADD=1, SUB=2, MULT=3, LW=4, SW=5, ADDI=6, BEQ=7};                                 //we have to add this but i'm not sure what it's for since we already using structs
 
 ///Structure that holds data about the type of instruction 
 struct inst
 {
-  int opcode;
+  enum instr opcode;
   int rs;
   int rt;
   int rd;
@@ -53,12 +55,7 @@ struct inst
   int c,m,n; 
   long pgm_c;
 
- 
-////////////Enumeration type describing opcodes////////////
-//enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
-
-
-  
+   
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -340,25 +337,25 @@ struct inst parser(char *line){
   while (p != NULL){            //loop through until done
 // printf("p is: %s<\n", p);  
     if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
-      arg[0] = 1;                       //add is 1
+      arg[0] = ADD;                       //add is 1
     }
     else if(strcmp(p, "sub")==0){        //sub is 2
-	   arg[0]=2;
+	   arg[0]=SUB;
     }
     else if(strcmp(p, "mul")==0){         //mul is 3
-	   arg[0]=3;
+	   arg[0]=MULT;
     }
     else if(strcmp(p, "lw")==0){            //lw is 4
-      arg[0]=4;
+      	   arg[0]=LW;
     }
     else if(strcmp(p, "sw")==0){                //sw is 5
-	   arg[0]=5;
+	   arg[0]=SW;
     }
     else if(strcmp(p, "addi")==0){           //addi is 6
-	   arg[0]=6;
+	   arg[0]=ADDI;
     }
     else if(strcmp(p, "beq")==0){          //beq is 7
-	   arg[0]=7;
+	   arg[0]=BEQ;
     }
     else{                          //convert p to integer and put it in arg array
       int ll = strlen(p);             //get length of argument
