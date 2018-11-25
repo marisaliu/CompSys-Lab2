@@ -338,7 +338,7 @@ struct inst parser(char *line){
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
   while (p != NULL){            //loop through until done
- //printf("p is: %s<\n", p);  
+// printf("p is: %s<\n", p);  
     if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
       arg[0] = 1;                       //add is 1
     }
@@ -363,37 +363,40 @@ struct inst parser(char *line){
     else{                          //convert p to integer and put it in arg array
       int ll = strlen(p);             //get length of argument
       int isD = 0, i;   
-      for(i=0; i < ll; i++){
-	     if((p[i] == '\n') || (p[i] == '\0')) {
+      for(i=0; i < ll; i++){	
+	     if((p[i] == '\n') || (p[i] == '\0')) { 
 	       isD=3;
 	     }
-	     else if(isdigit(p[i])){ 
+	     else if(isdigit(p[i])){          //check if it's a digit 
 	       isD = 1;
-	     }                   //check if each character is a digit
+	     }
+	     else if((p[i] - '0') == -43){}   //weird end of line thing
 	     else{
-			 isD = 0;             //there is a character that is not a digit, so break
+	       isD = 0;             //there is a character that is not a digit, so break
 	       break;
 	     }
       }
+
       if(isD == 3){                     //if there is a \n
 	     if(ll-1 <= 5){	
-          char withoutn[ll-1];	
+	       char withoutn[ll-1];	
 	       int z;
 	       int j;
 	       for(j=0;j < (ll-1);j++){
 	         if(isdigit(p[j]) != 0)  
 	           withoutn[j] = p[j];
-      	   else{
+      	       else{
 	           Error_InvalidRegister();                                 //checks if any of the last characters are not digits
-	         }
+	           }
 	       }
+	       printf("%d /n", atoi(withoutn));
 	       arg[a] = atoi(withoutn);
-          memset(withoutn, 0, (ll-1));
+               memset(withoutn, 0, (ll-1));
 	     }
 	     else{
 	       //printf("no\n");
 	       Error_ImmediateField();
-        } 
+             } 
       }
       else if(isD == 1){        //if number, convert into int to put into int array
         if(ll == 1){
@@ -410,7 +413,7 @@ struct inst parser(char *line){
       }
       else{                                   //not a number
 	     if((((arg[0]==4)  || (arg[0]==5)) && (c==2)) || (((arg[0]==6)  || (arg[0]==7)) && (c==3))){
-	       //printf("this is %d\n", isD); 
+	       printf("this is %d\n", isD); 
 	       Error_ImmediateField();
 	     }
 	     else{
@@ -512,7 +515,7 @@ struct inst parser(char *line){
         newInst.Imm = arg[3];
       }
       else{
-		 // printf("bbbbbb\n");
+		  //printf("bbbbbb\n");
 	     Error_ImmediateField();                //return too large immediate field
       }
     }
