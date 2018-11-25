@@ -762,21 +762,16 @@ void MEM(){
 	if(CycleCount == 0){
 		struct inst in = EXMEMLatch;
 		MEMout = in;
-
-	//	printf("MEM.opcode: %d\n",in.opcode);
 		if(in.opcode == 4){  // lw
-//			printf("lw - in.rs: %d\n", in.rs);
 			MEMout.rs = DMem[in.rs];
 			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = MEMout; 
 			  CycleCount = c;
 			}
-	   }
+	  }
 		else if(in.opcode == 5){  //sw
-//			printf("sw - in.rs: %d\n",in.rs);
 			DMem[reg[in.rt]] = in.rs;
 			rawHaz[in.rt] = 0;
-//			printf("DMem: %d \n",DMem[reg[in.rt]]);
 			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = MEMout;
 			  CycleCount = c;
@@ -785,11 +780,7 @@ void MEM(){
 		else{
 		  //halt simulation
 		  if(in.opcode == 8){
-			 if(MEMWBLatch.opcode == 0) MEMWBLatch.opcode = 8;
-/*					printf("\n MEM!");
-	printf("\nMEMWBLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", MEMWBLatch.opcode, MEMWBLatch.rs, MEMWBLatch.rt, MEMWBLatch.rd, MEMWBLatch.Imm);
-*/
-
+			  if(MEMWBLatch.opcode == 0) MEMWBLatch.opcode = 8;
 		  }
 		  //invalid opcode
 		  else if((in.opcode<0) || (in.opcode>8)){
@@ -807,14 +798,14 @@ void MEM(){
 	 MEMWBLatch = MEMout;
 //		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
 	 EXMEMLatch.opcode = 0;
-	 if(MEMout.opcode != 8)MEMcount++;
+	 if(MEMout.opcode != 8 && MEMout.opcode != 0)MEMcount++;
 	 CycleCount--;
   }
   else{
     if(CycleCount > 0){
-		CycleCount--;
-		if(MEMout.opcode != 8)MEMcount++;
-	 }
+			CycleCount--;
+			if(MEMout.opcode != 8 && MEMout.opcode != 0)MEMcount++;
+		}
   }
 }
 
@@ -913,8 +904,8 @@ void main (int argc, char *argv[]){
 	float MEMutil;
 	float WButil;
   halt = 0;
-  rawHaz[32] = 0;
-  reg[32] = 0; 
+  rawHaz[REG_NUM] = 0;
+  reg[REG_NUM] = 0; 
   stopReceive = halt = 0;//flags for haltSimulation
   DMem = (int *)malloc(500 * sizeof(int));
   int dataAddress=0;
@@ -1025,15 +1016,15 @@ printf("EXCOUNT: %d\n", sim_cycle);
     fprintf(output,"register values ");
     for (i=1;i<REG_NUM;i++){
       fprintf(output,"%d  ",reg[i]);
-    }
-    fprintf(output,"%d\n",pgm_c);
+    } 
+		fprintf(output,"Total time in cycles: %d\n",sim_cycle);
   }
    
   //close input and output files at the end of the simulation
 	fclose(input);
 	fclose(output);
 
-	return 0;
+//	return 0;
 }
   
 
