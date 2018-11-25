@@ -78,8 +78,9 @@ char *progScanner(char* currentLine){
   int pos=0;
   int cp[2]={0};
   int l=0, r=0;
+  char *p;
 
-for(char *p = currentLine; *p; ++p){
+for(p = currentLine; *p; ++p){
   if(*p == '(') {cp[0]=1; l++;}                 //if ( increase left counter
   if(*p == ')'){                             //if ) increase right counter
     r++;
