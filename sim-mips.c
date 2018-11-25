@@ -978,7 +978,7 @@ void main (int argc, char *argv[]){
   struct inst finalInst;
 	finalInst.opcode = 8;
 	instMem[instIndex++] = finalInst;
-  fclose(input);
+//  fclose(input);
  
   while(!halt){
 		WB();
