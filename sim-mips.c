@@ -676,7 +676,6 @@ void ID(){
 //When the counter = 1 you will have finished the operation and set the output to the correct latch
 //based on if it needs the MEM stage or not
 void EX(){
-  //printf("EX\n");
 	static int CycleCount = 0;
 	if(CycleCount == 0){
 		struct inst in = IDEXLatch;
@@ -747,9 +746,6 @@ void EX(){
 		  if(in.opcode == 8){
 			 EXrun = 0;
 			 if(EXMEMLatch.opcode == 0) EXMEMLatch.opcode = 8;
-//				printf("\n EX!");
-//	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
-
 		  }
 		  else if(in.opcode != 0){
 			 printf("EX: OPCODE ERROR\n");
@@ -758,9 +754,6 @@ void EX(){
 		  }
 		}
 	}
-//	printf("\n EX!");
-//	printf("\nEX out \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXout.opcode, EXout.rs, EXout.rt, EXout.rd, EXout.Imm);
-
 	if(CycleCount == 1){
 	  if(EXMEMLatch.opcode == 0){
 		 EXMEMLatch = EXout;
@@ -775,14 +768,12 @@ void EX(){
 		   if(EXout.opcode != 8)EXcount++;
 	  }
    }
-//printf("EXrun: %d\n", EXrun);
 }
 
 ////////////////////////////////////////////////////////////////////
 /////////////////////////MEM////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 void MEM(){
-  //printf("MEM\n");
 	static int CycleCount = 0;
 	if(CycleCount == 0){
 		struct inst in = EXMEMLatch;
@@ -817,7 +808,6 @@ void MEM(){
 			 exit(0);
 		  }
 		  else{
-			// MEMWBLatch = in;
 			 if(in.opcode != 0) MEMrun = 1;
 			 CycleCount = 1;
 		  }
@@ -825,7 +815,6 @@ void MEM(){
   }
   if(CycleCount == 1){
 	 MEMWBLatch = MEMout;
-//		printf("FINISHED MEM - MEMWBLatch: %d", MEMWBLatch.rs);
 	 EXMEMLatch.opcode = 0;
 	 if(MEMout.opcode != 8 && MEMout.opcode != 0)MEMcount++;
 	 CycleCount--;
@@ -836,7 +825,6 @@ void MEM(){
 			if(MEMout.opcode != 8 && MEMout.opcode != 0)MEMcount++;
 		}
   }
-//printf("MEMrun: %d\n", MEMrun);
 }
 
 
@@ -846,9 +834,6 @@ void MEM(){
 //////////////////////////////WB/////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 void WB(){
-  //printf("\nWB");
-	//printf("\nMEWBMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", MEMWBLatch.opcode, MEMWBLatch.rs, MEMWBLatch.rt, MEMWBLatch.rd, MEMWBLatch.Imm);
-//printf("WB: rawHaz[in.rs] %d, rawHaz[in.rt] %d\n", rawHaz[MEMWBLatch.rs], rawHaz[MEMWBLatch.rt]);
   struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
     WBrun = 1;
@@ -856,16 +841,13 @@ void WB(){
 	 rawHaz[in.rd] = 0;
 	 WBcount++;
 	 MEMWBLatch.opcode = 0;
-//	 printf("WB: reg %d: %d\n", in.rd, reg[in.rd]);
   }
   else if((in.opcode == 4) || (in.opcode == 6)){   //addi,lw
 	 WBrun = 1;
 	 mips_reg[in.rt] = in.rs;
-//	 printf("WB: in.rt %d \n", in.rt);
 	 rawHaz[in.rt] = 0;
 	 WBcount++;
 	 MEMWBLatch.opcode = 0;
-//	 printf("WB: reg %d: %d\n", in.rt, reg[in.rt]);
   }
   else if(in.opcode == 5 || in.opcode == 7){  //sw beq
 	 MEMWBLatch.opcode = 0;
@@ -876,7 +858,6 @@ void WB(){
     if(in.opcode == 8){
 		halt = 1;
 		WBrun = 0;
-//		printf("wbhalt\n");
 	 }
 	 //Return error // assertion
 	 else if(in.opcode != 0){
@@ -885,7 +866,6 @@ void WB(){
 	   exit(0);
 	 }
   }
-//printf("WBrun: %d\n", WBrun);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -990,17 +970,12 @@ void main (int argc, char *argv[]){
   }
 
 	//////////////////////Read from input file to instruction memory/////////////////////
- // char *traceEntry;
-  //FILE *ifp;
-  //ifp = fopen("./program.txt", "r");
  char traceEntry[100];
-//  traceEntry = malloc(200*sizeof(char)); 
   char *hs = "haltSimulation\n";
   int instIndex = 0;
 
   fgets(traceEntry, 100, input);                 //get first line
-  while(strcmp(traceEntry, "haltSimulation\n") != 0){                  //if it doesn't reach haltSimulation
-//  printf("String input is %s \n", traceEntry);      
+  while(strcmp(traceEntry, "haltSimulation\n") != 0){                  //if it doesn't reach haltSimulation      
 		instMem[instIndex++] = parser(regNumberConverter(progScanner(traceEntry)));
     fgets(traceEntry, 100, input);
   }
@@ -1010,7 +985,6 @@ void main (int argc, char *argv[]){
   struct inst finalInst;
 	finalInst.opcode = 8;
 	instMem[instIndex++] = finalInst;
-//  fclose(input);
  
   while(!halt){
 		WB();
@@ -1063,6 +1037,6 @@ printf("EXCOUNT: %d\n", sim_cycle);
 	fclose(input);
 	fclose(output);
 
-//	return 0;
+
 }
   
