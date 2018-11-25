@@ -943,16 +943,16 @@ void main (int argc, char *argv[]){
   }
 
 	//////////////////////Read from input file to instruction memory/////////////////////
-  char *traceEntry;
+ // char *traceEntry;
   //FILE *ifp;
   //ifp = fopen("./program.txt", "r");
- 
-  traceEntry = malloc(200*sizeof(char)); 
+ char traceEntry[100];
+//  traceEntry = malloc(200*sizeof(char)); 
   char *hs = "haltSimulation\n";
   int instIndex = 0;
 
   fgets(traceEntry, 100, input);                 //get first line
-  while(strcmp(traceEntry, hs) != 0){                  //if it doesn't reach haltSimulation
+  while(strcmp(traceEntry, "haltSimulation\n") != 0){                  //if it doesn't reach haltSimulation
 //  printf("String input is %s \n", traceEntry);      
 		instMem[instIndex++] = parser(regNumberConverter(progScanner(traceEntry)));
     fgets(traceEntry, 100, input);
