@@ -888,6 +888,7 @@ void WB(){
     if(in.opcode == 8){
 		halt = 1;
 		WBrun = 0;
+//		printf("wbhalt\n");
 	 }
 	 //Return error // assertion
 	 else if(in.opcode != 0){
@@ -1025,6 +1026,7 @@ void main (int argc, char *argv[]){
  
   while(!halt){
 		WB();
+		if(halt) break;
 		MEM();
 		EX();
 		ID();
@@ -1044,11 +1046,16 @@ void main (int argc, char *argv[]){
 printf("EXCOUNT: %d\n", sim_cycle);
 
   //output statistics in batch mode
-	IFutil = (float) IFcount/ sim_cycle;
-	IDutil = (float) IDcount/sim_cycle;
-	EXutil = (float) EXcount/sim_cycle;
-	MEMutil = (float) MEMcount/sim_cycle;
-	WButil = (float) WBcount/sim_cycle;
+	if(sim_cycle != 0){
+     IFutil = (float) IFcount/ sim_cycle;
+	  IDutil = (float) IDcount/sim_cycle;
+	  EXutil = (float) EXcount/sim_cycle;
+	  MEMutil = (float) MEMcount/sim_cycle;
+	  WButil = (float) WBcount/sim_cycle;
+	}
+	else{
+	  IFutil = IDutil = EXutil = MEMutil = WButil = 0;
+	}
   ///////////////////////output statistics in batch mode/////////////////////////:
 
   if(sim_mode==0){
