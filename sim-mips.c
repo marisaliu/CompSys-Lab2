@@ -34,13 +34,13 @@ struct inst
   struct inst IDEXLatch;
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
-  int rawHaz[32]; //array of flags for each reg
+  int rawHaz[REG_NUM]; //array of flags for each reg
   struct inst instMem[512];  
   int pc;
   struct inst EXout;
   struct inst MEMout;
   int *DMem;
-  long reg[32]; //what is in each register
+  long mips_reg[REG_NUM]; //what is in each register
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -592,8 +592,8 @@ void ID(){
 	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  rawHaz[in.rd] = 1; 		
-		  out.rt = reg[in.rt];
-		  out.rs = reg[in.rs];
+		  out.rt = mips_reg[in.rt];
+		  out.rs = mips_reg[in.rs];
 		  IFIDLatch.opcode = 0;                                     
 		  IDEXLatch = out;
 		  IDcount++;
@@ -605,7 +605,7 @@ void ID(){
     if(!rawHaz[in.rs]){
 		if(IDEXLatch.opcode == 0){
 		  rawHaz[in.rt] = 1;
-		  out.rs = reg[in.rs];
+		  out.rs = mips_reg[in.rs];
 		  IFIDLatch.opcode = 0;
 		  IDEXLatch = out;
 		  IDcount++;
@@ -617,7 +617,7 @@ void ID(){
     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  rawHaz[in.rt] = 1;
-		  out.rs = reg[in.rs];
+		  out.rs = mips_reg[in.rs];
 		  IFIDLatch.opcode = 0;                                     
 		  IDEXLatch = out;
 		  IDcount++;
@@ -629,8 +629,8 @@ void ID(){
     if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  branchUnresolved = 1;                                      
-		  out.rs = reg[in.rs];
-		  out.rt = reg[in.rt];
+		  out.rs = mips_reg[in.rs];
+		  out.rt = mips_reg[in.rt];
 		  IFIDLatch.opcode = 0;                                     
 		  IDEXLatch = out;
 		  IDcount++;
@@ -773,7 +773,7 @@ void MEM(){
 			}
 	  }
 		else if(in.opcode == 5){  //sw
-			DMem[reg[in.rt]] = in.rs;
+			DMem[mips_reg[in.rt]] = in.rs;
 			rawHaz[in.rt] = 0;
 			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = MEMout;
@@ -824,14 +824,14 @@ void WB(){
 //printf("WB: rawHaz[in.rs] %d, rawHaz[in.rt] %d\n", rawHaz[MEMWBLatch.rs], rawHaz[MEMWBLatch.rt]);
   struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
-    reg[in.rd] = in.rs;
+   mips_reg[in.rd] = in.rs;
 	 rawHaz[in.rd] = 0;
 	 WBcount++;
 	 MEMWBLatch.opcode = 0;
 //	 printf("WB: reg %d: %d\n", in.rd, reg[in.rd]);
   }
   else if((in.opcode == 4) || (in.opcode == 6)){   //addi,lw
-	 reg[in.rt] = in.rs;
+	 mips_reg[in.rt] = in.rs;
 //	 printf("WB: in.rt %d \n", in.rt);
 	 rawHaz[in.rt] = 0;
 	 WBcount++;
@@ -906,9 +906,7 @@ void main (int argc, char *argv[]){
 	float EXutil;
 	float MEMutil;
 	float WButil;
-  halt = 0;
-  rawHaz[REG_NUM] = 0;
-  reg[REG_NUM] = 0; 
+  halt = 0; 
   stopReceive = halt = 0;//flags for haltSimulation
   DMem = (int *)malloc(500 * sizeof(int));
   int dataAddress=0;
@@ -955,7 +953,7 @@ void main (int argc, char *argv[]){
 	//initialize registers and program counter
   if(sim_mode==1){
     for (i=0;i<REG_NUM;i++){
-			reg[i]=0;
+			mips_reg[i]=0;
 			rawHaz[i] = 0;
     }
   }
@@ -993,7 +991,7 @@ void main (int argc, char *argv[]){
 		if(sim_mode==1){
 			printf("cycle: %d register value: ",sim_cycle);
 			for (i=1;i<REG_NUM;i++){
-				printf("%d  ",reg[i]);
+				printf("%d  ",mips_reg[i]);
 			}
 			printf("program counter: %d\n",pgm_c);
 			printf("press ENTER to continue\n");
@@ -1018,7 +1016,7 @@ printf("EXCOUNT: %d\n", sim_cycle);
     // stage following sequence IF ID EX MEM WB		
     fprintf(output,"register values ");
     for (i=1;i<REG_NUM;i++){
-      fprintf(output,"%d  ",reg[i]);
+      fprintf(output,"%d  ",mips_reg[i]);
     } 
 		fprintf(output,"Total time in cycles: %d\n",sim_cycle);
   }
