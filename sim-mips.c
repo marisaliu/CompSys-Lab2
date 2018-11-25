@@ -54,10 +54,8 @@ struct inst
   int mode; 
   int c,m,n; 
   long pgm_c;
-  int IFrun=0, IDrun=0, EXrun=0, MEMrun=0, WBrun=0;
 
-
-
+   
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,15 +70,12 @@ exit(1);
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
 //  printf("Input line: %s \n", currentLine);
-  char copy[strlen(currentLine)];   //make empty array of size currentLine
-  char * newLine = (char *)malloc(strlen(currentLine)*sizeof(char));
+  char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
   int cp[2]={0};
   int l=0, r=0;
   char *p;
-
-  assert(currentLine != NULL);
 
 for(p = currentLine; *p; ++p){
   if(*p == '(') {cp[0]=1; l++;}                 //if ( increase left counter
@@ -91,29 +86,27 @@ for(p = currentLine; *p; ++p){
   }
 
   if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' ')){
-	copy[pos++] =*p;
+	currentLine[pos++] =*p;
 
   }
   else if((*p=='(') || (*p==')')){
-	 copy[pos++] = ' ';
+	 currentLine[pos++] = ' ';
   }
 
 }
-  copy[pos]='\0';
+  currentLine[pos]='\0';
 
 if(l != r) Error_ParanthesesMismatch();                //if left and right don't match, throw error
 
 //printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
 int x;
-for(i=x=0; copy[i]; ++i){
-  if(!isspace(copy[i]) || (i > 0 && !isspace(copy[i-1]))) copy[x++] = copy[i];
+for(i=x=0; currentLine[i]; ++i){
+  if(!isspace(currentLine[i]) || (i > 0 && !isspace(currentLine[i-1]))) currentLine[x++] = currentLine[i];
 }
-copy[x] = '\0';
-//strcpy(newLine, copy);
-newLine = copy;
-//printf("Fixed spaces: %s\n", newLine);
-return newLine;
+currentLine[x] = '\0';
+//printf("Fixed spaces: %s\n", currentLine);
+return currentLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -139,8 +132,6 @@ char *regNumberConverter(char *line){
   int regNum;
   int pos=0;
   int newPos=0;
-
-  assert(line != NULL);
 
   for(pos=0; pos<strlen(line); pos++){
     if(line[pos] == '$'){ //do nothing until hit a $
@@ -294,7 +285,7 @@ char *regNumberConverter(char *line){
   
   char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
 
-  //printf("After regNumberConverter: %s\n", newNewLine);
+  printf("After regNumberConverter: %s\n", newNewLine);
   return newNewLine;
 }
 
@@ -336,9 +327,7 @@ struct inst parser(char *line){
   newInst.rd=0;
   newInst.rt=0;
   newInst.Imm=0;
- 
-  assert(line != NULL);                               //input line should not be null
-
+  
   char *p = malloc(100*sizeof(char));                //store each section after parse
   //char *instrname = malloc(4 * sizeof(char));         //name of instruction
   int arg[4];             //integer array of argument values 
@@ -550,24 +539,20 @@ printf("Imm: %d\n", newInst.Imm);
 void IF(){
   static int CycleCount = 0;
 
-  if(CycleCount == 0){
-	 CycleCount = c;
-	 IFrun=1;
-	 if(instMem[pgm_c/4].opcode == 8){
-		stopReceive=1;
-		IFrun = 0;
-		if(IFIDLatch.opcode == 0) IFIDLatch = instMem[pgm_c/4];
-	 }
-  }
+  if(CycleCount == 0) CycleCount = c;
   if(CycleCount == 1){
-	 if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
+	 if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
 		IFIDLatch = instMem[pgm_c/4];          
-	   if(instMem[pgm_c/4].opcode == 7){    
+		if(IFIDLatch.opcode == 7){    
 		  branchUnresolved = 1;
-	   }
-		if(!stopReceive) pgm_c +=4;
-		IFcount++;
-		CycleCount--;
+		}
+		if(IFIDLatch.opcode == 8) stopReceive=1;
+		else{
+		//	 printf("IF\n");
+		  pgm_c +=4;
+		  IFcount++;
+		  CycleCount--;
+		}
 	 }
   }
   else if(CycleCount>0){
@@ -575,13 +560,12 @@ void IF(){
 	 CycleCount--;
 	 IFcount++;
   }
-/*
+
 printf("\nIFcount %d", IFcount);
 printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
 printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
 printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
-*/
-  //printf("IFrun %d\n", IFrun);
+
 }
 
 
@@ -602,7 +586,6 @@ void ID(){
 //	printf("in.opcode: %d\n", in.opcode);
 //	printf("IDEXLatch.opcode %d\n", IDEXLatch.opcode);
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul    
-	 IDrun = 1;
 	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  rawHaz[in.rd] = 1; 		
@@ -616,8 +599,7 @@ void ID(){
 	 //else printf("hazard");
   }
   else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
-    IDrun = 1;
-	 if(!rawHaz[in.rs]){
+    if(!rawHaz[in.rs]){
 		if(IDEXLatch.opcode == 0){
 		  rawHaz[in.rt] = 1;
 		  out.rs = mips_reg[in.rs];
@@ -629,8 +611,7 @@ void ID(){
 //	 else printf("ID rawHaz addi: %d\n", rawHaz[in.rt]);
   }
   else if(in.opcode == 5){          //SW	
-    IDrun = 1;
-	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  rawHaz[in.rt] = 1;
 		  out.rs = mips_reg[in.rs];
@@ -642,8 +623,7 @@ void ID(){
 	 //else printf("hazard");
   }
   else if(in.opcode == 7){ //beq	
-    IDrun = 1;
-	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  branchUnresolved = 1;                                      
 		  out.rs = mips_reg[in.rs];
@@ -659,7 +639,6 @@ void ID(){
 	 //halt simulation
 	 if(in.opcode == 8){
 		stopReceive = 1;
-		IDrun = 0;
 		if(IDEXLatch.opcode == 0){
 		  IDEXLatch.opcode = 8;
 		}
@@ -671,9 +650,8 @@ void ID(){
 	   exit(0);
 	 }
   }
-//	printf("\nID!: ");
-//	printf("\nIDEXLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IDEXLatch.opcode, IDEXLatch.rs, IDEXLatch.rt, IDEXLatch.rd, IDEXLatch.Imm);
-//printf("IDrun: %d\n", IDrun);
+	//printf("\nID!: ");
+	//printf("\nIDEXLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IDEXLatch.opcode, IDEXLatch.rs, IDEXLatch.rt, IDEXLatch.rd, IDEXLatch.Imm);
 }
 
 
@@ -694,44 +672,37 @@ void EX(){
 		struct inst in = IDEXLatch;
 		EXout = in;
 		if(in.opcode == 1){       //add
-			EXrun = 1;
-		   EXout.rs = in.rs + in.rt;
+			EXout.rs = in.rs + in.rt;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 2){ //sub
-			EXrun = 1;
-		   EXout.rs = in.rs - in.rt;
+			EXout.rs = in.rs - in.rt;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 3){  //mul
-			EXrun = 1;
-		   EXout.rs = in.rt*in.rs;
+			EXout.rs = in.rt*in.rs;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = m;
 		}
 		else if(in.opcode == 4){  //lw
-			EXrun = 1;
-		   EXout.rs = in.rs + (in.Imm/4);
+			EXout.rs = in.rs + (in.Imm/4);
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 5){  //sw
-			EXrun = 1;
-		   EXout.rs = in.rs + (in.Imm/4);
+			EXout.rs = in.rs + (in.Imm/4);
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 6){  //addi
-			EXrun = 1;
-		   EXout.rs = in.rs + in.Imm;
+			EXout.rs = in.rs + in.Imm;
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 7){  //beq
-			EXrun = 1;
-		    if(in.rs == in.rt){ 
+			if(in.rs == in.rt){ 
 			  
 			  if(((pgm_c + 4*in.Imm) < 0) || (pgm_c + 4*in.Imm) >= 512){     //check if the resulting pgm_c is negative or bigger than allotted array
 				printf("Invalid program counter value!");
@@ -757,11 +728,10 @@ void EX(){
 		else{
       //Return error // assertion
 		  if(in.opcode == 8){
-			 EXrun = 0;
 			 if(EXMEMLatch.opcode == 0) EXMEMLatch.opcode = 8;
-//				printf("\n EX!");
-//	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
-
+				/*	printf("\n EX!");
+	printf("\nEXMEMLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXMEMLatch.opcode, EXMEMLatch.rs, EXMEMLatch.rt, EXMEMLatch.rd, EXMEMLatch.Imm);
+*/
 		  }
 		  else if(in.opcode != 0){
 			 printf("EX: OPCODE ERROR\n");
@@ -770,8 +740,8 @@ void EX(){
 		  }
 		}
 	}
-//	printf("\n EX!");
-//	printf("\nEX out \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXout.opcode, EXout.rs, EXout.rt, EXout.rd, EXout.Imm);
+	//printf("\n EX!");
+	//printf("\nEX out \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXout.opcode, EXout.rs, EXout.rt, EXout.rd, EXout.Imm);
 
 	if(CycleCount == 1){
 	  if(EXMEMLatch.opcode == 0){
@@ -787,7 +757,6 @@ void EX(){
 		   if(EXout.opcode != 8)EXcount++;
 	  }
    }
-//printf("EXrun: %d\n", EXrun);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -800,15 +769,13 @@ void MEM(){
 		struct inst in = EXMEMLatch;
 		MEMout = in;
 		if(in.opcode == 4){  // lw
-		  MEMrun = 1;	
-		  MEMout.rs = DMem[in.rs];
-		  if(MEMWBLatch.opcode == 0){
-			 MEMWBLatch = MEMout; 
-			 CycleCount = c;
-		  }
-	   }
+			MEMout.rs = DMem[in.rs];
+			if(MEMWBLatch.opcode == 0){
+			  MEMWBLatch = MEMout; 
+			  CycleCount = c;
+			}
+	  }
 		else if(in.opcode == 5){  //sw
-			MEMrun = 1;
 			DMem[mips_reg[in.rt]] = in.rs;
 			rawHaz[in.rt] = 0;
 			if(MEMWBLatch.opcode == 0){
@@ -819,8 +786,7 @@ void MEM(){
 		else{
 		  //halt simulation
 		  if(in.opcode == 8){
-			 MEMrun = 0;
-			 if(MEMWBLatch.opcode == 0) MEMWBLatch.opcode = 8;
+			  if(MEMWBLatch.opcode == 0) MEMWBLatch.opcode = 8;
 		  }
 		  //invalid opcode
 		  else if((in.opcode<0) || (in.opcode>8)){
@@ -830,7 +796,6 @@ void MEM(){
 		  }
 		  else{
 			// MEMWBLatch = in;
-			 if(in.opcode != 0) MEMrun = 1;
 			 CycleCount = 1;
 		  }
 	  }
@@ -848,7 +813,6 @@ void MEM(){
 			if(MEMout.opcode != 8 && MEMout.opcode != 0)MEMcount++;
 		}
   }
-//printf("MEMrun: %d\n", MEMrun);
 }
 
 
@@ -863,15 +827,13 @@ void WB(){
 //printf("WB: rawHaz[in.rs] %d, rawHaz[in.rt] %d\n", rawHaz[MEMWBLatch.rs], rawHaz[MEMWBLatch.rt]);
   struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
-    WBrun = 1;
-    mips_reg[in.rd] = in.rs;
+   mips_reg[in.rd] = in.rs;
 	 rawHaz[in.rd] = 0;
 	 WBcount++;
 	 MEMWBLatch.opcode = 0;
 //	 printf("WB: reg %d: %d\n", in.rd, reg[in.rd]);
   }
   else if((in.opcode == 4) || (in.opcode == 6)){   //addi,lw
-	 WBrun = 1;
 	 mips_reg[in.rt] = in.rs;
 //	 printf("WB: in.rt %d \n", in.rt);
 	 rawHaz[in.rt] = 0;
@@ -881,15 +843,10 @@ void WB(){
   }
   else if(in.opcode == 5 || in.opcode == 7){  //sw beq
 	 MEMWBLatch.opcode = 0;
-  	 WBrun = 1;
   }
   else{
     //halt simulation
-    if(in.opcode == 8){
-		halt = 1;
-		WBrun = 0;
-//		printf("wbhalt\n");
-	 }
+    if(in.opcode == 8) halt = 1;
 	 //Return error // assertion
 	 else if(in.opcode != 0){
 	   printf("WB: OPCODE ERROR\n");
@@ -897,7 +854,6 @@ void WB(){
 	   exit(0);
 	 }
   }
-//printf("WBrun: %d\n", WBrun);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1026,12 +982,11 @@ void main (int argc, char *argv[]){
  
   while(!halt){
 		WB();
-		if(halt) break;
 		MEM();
 		EX();
 		ID();
 		IF();
-		if(WBrun || MEMrun || EXrun || IDrun || IFrun)sim_cycle++;
+		sim_cycle++;
 		if(sim_mode==1){
 			printf("cycle: %d register value: ",sim_cycle);
 			for (i=1;i<REG_NUM;i++){
@@ -1046,16 +1001,11 @@ void main (int argc, char *argv[]){
 printf("EXCOUNT: %d\n", sim_cycle);
 
   //output statistics in batch mode
-	if(sim_cycle != 0){
-     IFutil = (float) IFcount/ sim_cycle;
-	  IDutil = (float) IDcount/sim_cycle;
-	  EXutil = (float) EXcount/sim_cycle;
-	  MEMutil = (float) MEMcount/sim_cycle;
-	  WButil = (float) WBcount/sim_cycle;
-	}
-	else{
-	  IFutil = IDutil = EXutil = MEMutil = WButil = 0;
-	}
+	IFutil = (float) IFcount/ sim_cycle;
+	IDutil = (float) IDcount/sim_cycle;
+	EXutil = (float) EXcount/sim_cycle;
+	MEMutil = (float) MEMcount/sim_cycle;
+	WButil = (float) WBcount/sim_cycle;
   ///////////////////////output statistics in batch mode/////////////////////////:
 
   if(sim_mode==0){
