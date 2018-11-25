@@ -891,8 +891,8 @@ void main (int argc, char *argv[]){
 	float MEMutil;
 	float WButil;
   halt = 0;
-  rawHaz[32] = 0;
-  reg[32] = 0; 
+  rawHaz[REG_NUM] = 0;
+  reg[REG_NUM] = 0; 
   stopReceive = halt = 0;//flags for haltSimulation
   DMem = (int *)malloc(500 * sizeof(int));
   int dataAddress=0;
