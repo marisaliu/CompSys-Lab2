@@ -15,11 +15,13 @@
 #define BATCH 0
 #define REG_NUM 32
 
+////////////Enumeration type describing opcodes////////////
+enum instr{ADD=1, SUB=2, MULT=3, LW=4, SW=5, ADDI=6, BEQ=7};                                 //we have to add this but i'm not sure what it's for since we already using structs
 
 ///Structure that holds data about the type of instruction 
 struct inst
 {
-  int opcode;
+  enum instr opcode;
   int rs;
   int rt;
   int rd;
@@ -34,13 +36,13 @@ struct inst
   struct inst IDEXLatch;
   struct inst EXMEMLatch;
   struct inst MEMWBLatch;
-  int rawHaz[32]; //array of flags for each reg
+  int rawHaz[REG_NUM]; //array of flags for each reg
   struct inst instMem[512];  
   int pc;
   struct inst EXout;
   struct inst MEMout;
   int *DMem;
-  long reg[32]; //what is in each register
+  long mips_reg[REG_NUM]; //what is in each register
   int branchUnresolved;
   int IFcount;
   int IDcount;
@@ -53,12 +55,9 @@ struct inst
   int c,m,n; 
   long pgm_c;
   int IFrun=0, IDrun=0, EXrun=0, MEMrun=0, WBrun=0;
- 
-////////////Enumeration type describing opcodes////////////
-//enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
 
 
-  
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +72,8 @@ exit(1);
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
 //  printf("Input line: %s \n", currentLine);
-  char copy[strlen(currentLine)+1];   //make empty array of size currentLine
+  char copy[strlen(currentLine)];   //make empty array of size currentLine
+  char * newLine = (char *)malloc(strlen(currentLine)*sizeof(char));
   int i;
   int pos=0;
   int cp[2]={0};
@@ -89,27 +89,29 @@ for(p = currentLine; *p; ++p){
   }
 
   if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' ')){
-	currentLine[pos++] =*p;
+	copy[pos++] =*p;
 
   }
   else if((*p=='(') || (*p==')')){
-	 currentLine[pos++] = ' ';
+	 copy[pos++] = ' ';
   }
 
 }
-  currentLine[pos]='\0';
+  copy[pos]='\0';
 
 if(l != r) Error_ParanthesesMismatch();                //if left and right don't match, throw error
 
 //printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
 int x;
-for(i=x=0; currentLine[i]; ++i){
-  if(!isspace(currentLine[i]) || (i > 0 && !isspace(currentLine[i-1]))) currentLine[x++] = currentLine[i];
+for(i=x=0; copy[i]; ++i){
+  if(!isspace(copy[i]) || (i > 0 && !isspace(copy[i-1]))) copy[x++] = copy[i];
 }
-currentLine[x] = '\0';
-//printf("Fixed spaces: %s\n", currentLine);
-return currentLine;
+copy[x] = '\0';
+//strcpy(newLine, copy);
+newLine = copy;
+//printf("Fixed spaces: %s\n", newLine);
+return newLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -288,7 +290,7 @@ char *regNumberConverter(char *line){
   
   char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
 
-  printf("After regNumberConverter: %s\n", newNewLine);
+  //printf("After regNumberConverter: %s\n", newNewLine);
   return newNewLine;
 }
 
@@ -338,62 +340,65 @@ struct inst parser(char *line){
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
   while (p != NULL){            //loop through until done
- //printf("p is: %s<\n", p);  
+// printf("p is: %s<\n", p);  
     if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
-      arg[0] = 1;                       //add is 1
+      arg[0] = ADD;                       //add is 1
     }
     else if(strcmp(p, "sub")==0){        //sub is 2
-	   arg[0]=2;
+	   arg[0]=SUB;
     }
     else if(strcmp(p, "mul")==0){         //mul is 3
-	   arg[0]=3;
+	   arg[0]=MULT;
     }
     else if(strcmp(p, "lw")==0){            //lw is 4
-      arg[0]=4;
+      	   arg[0]=LW;
     }
     else if(strcmp(p, "sw")==0){                //sw is 5
-	   arg[0]=5;
+	   arg[0]=SW;
     }
     else if(strcmp(p, "addi")==0){           //addi is 6
-	   arg[0]=6;
+	   arg[0]=ADDI;
     }
     else if(strcmp(p, "beq")==0){          //beq is 7
-	   arg[0]=7;
+	   arg[0]=BEQ;
     }
     else{                          //convert p to integer and put it in arg array
       int ll = strlen(p);             //get length of argument
       int isD = 0, i;   
-      for(i=0; i < ll; i++){
-	     if((p[i] == '\n') || (p[i] == '\0')) {
+      for(i=0; i < ll; i++){	
+	     if((p[i] == '\n') || (p[i] == '\0')) { 
 	       isD=3;
 	     }
-	     else if(isdigit(p[i])){ 
+	     else if(isdigit(p[i])){          //check if it's a digit 
 	       isD = 1;
-	     }                   //check if each character is a digit
+	     }
+	     else if((p[i] - '0') == -43){}   //weird end of line thing
 	     else{
-			 isD = 0;             //there is a character that is not a digit, so break
+	       isD = 0;             //there is a character that is not a digit, so break
 	       break;
 	     }
       }
+
       if(isD == 3){                     //if there is a \n
 	     if(ll-1 <= 5){	
-          char withoutn[ll-1];	
+	       char withoutn[ll-1];	
 	       int z;
 	       int j;
 	       for(j=0;j < (ll-1);j++){
 	         if(isdigit(p[j]) != 0)  
 	           withoutn[j] = p[j];
-      	   else{
+      	       else{
 	           Error_InvalidRegister();                                 //checks if any of the last characters are not digits
-	         }
+	           }
 	       }
+	       printf("%d /n", atoi(withoutn));
 	       arg[a] = atoi(withoutn);
-          memset(withoutn, 0, (ll-1));
+               memset(withoutn, 0, (ll-1));
 	     }
 	     else{
 	       //printf("no\n");
 	       Error_ImmediateField();
-        } 
+             } 
       }
       else if(isD == 1){        //if number, convert into int to put into int array
         if(ll == 1){
@@ -410,7 +415,7 @@ struct inst parser(char *line){
       }
       else{                                   //not a number
 	     if((((arg[0]==4)  || (arg[0]==5)) && (c==2)) || (((arg[0]==6)  || (arg[0]==7)) && (c==3))){
-	       //printf("this is %d\n", isD); 
+	       printf("this is %d\n", isD); 
 	       Error_ImmediateField();
 	     }
 	     else{
@@ -512,7 +517,7 @@ struct inst parser(char *line){
         newInst.Imm = arg[3];
       }
       else{
-		 // printf("bbbbbb\n");
+		  //printf("bbbbbb\n");
 	     Error_ImmediateField();                //return too large immediate field
       }
     }
@@ -542,10 +547,7 @@ void IF(){
   if(CycleCount == 0){
 	 CycleCount = c;
 	 IFrun=1;
-	 if(instMem[pgm_c/4].opcode == 7){    
-		branchUnresolved = 1;
-	 }
-	 else if(instMem[pgm_c/4].opcode == 8){
+	 if(instMem[pgm_c/4].opcode == 8){
 		stopReceive=1;
 		IFrun = 0;
 		if(IFIDLatch.opcode == 0) IFIDLatch = instMem[pgm_c/4];
@@ -554,6 +556,9 @@ void IF(){
   if(CycleCount == 1){
 	 if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
 		IFIDLatch = instMem[pgm_c/4];          
+	   if(instMem[pgm_c/4].opcode == 7){    
+		  branchUnresolved = 1;
+	   }
 		if(!stopReceive) pgm_c +=4;
 		IFcount++;
 		CycleCount--;
@@ -595,8 +600,8 @@ void ID(){
 	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  rawHaz[in.rd] = 1; 		
-		  out.rt = reg[in.rt];
-		  out.rs = reg[in.rs];
+		  out.rt = mips_reg[in.rt];
+		  out.rs = mips_reg[in.rs];
 		  IFIDLatch.opcode = 0;                                     
 		  IDEXLatch = out;
 		  IDcount++;
@@ -609,7 +614,7 @@ void ID(){
 	 if(!rawHaz[in.rs]){
 		if(IDEXLatch.opcode == 0){
 		  rawHaz[in.rt] = 1;
-		  out.rs = reg[in.rs];
+		  out.rs = mips_reg[in.rs];
 		  IFIDLatch.opcode = 0;
 		  IDEXLatch = out;
 		  IDcount++;
@@ -622,7 +627,7 @@ void ID(){
 	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  rawHaz[in.rt] = 1;
-		  out.rs = reg[in.rs];
+		  out.rs = mips_reg[in.rs];
 		  IFIDLatch.opcode = 0;                                     
 		  IDEXLatch = out;
 		  IDcount++;
@@ -635,8 +640,8 @@ void ID(){
 	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  branchUnresolved = 1;                                      
-		  out.rs = reg[in.rs];
-		  out.rt = reg[in.rt];
+		  out.rs = mips_reg[in.rs];
+		  out.rt = mips_reg[in.rt];
 		  IFIDLatch.opcode = 0;                                     
 		  IDEXLatch = out;
 		  IDcount++;
@@ -718,9 +723,28 @@ void EX(){
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
-		else if(in.opcode == 7){  //bq
+		else if(in.opcode == 7){  //beq
 			EXrun = 1;
-		   if(in.rs == in.rt) pgm_c += 4*in.Imm;
+		    if(in.rs == in.rt){ 
+			  
+			  if(((pgm_c + 4*in.Imm) < 0) || (pgm_c + 4*in.Imm) >= 512){     //check if the resulting pgm_c is negative or bigger than allotted array
+				printf("Invalid program counter value!");
+				exit(1);
+			  }
+
+			  int x;
+			  struct inst checkHalt;
+			  for(x=pgm_c; x < (pgm_c + (4*in.Imm)); x+=4)                //check if it skips over haltSimulation
+			  {
+				checkHalt = instMem[x/4];
+				if(checkHalt.opcode == 8){
+				  printf("haltSimulation reached!");
+				  exit(1);
+				}
+			  }
+
+			  pgm_c += 4*in.Imm;          //if it passes all checks, increase pgm_c
+			}
 			CycleCount = n;
 			branchUnresolved = 0;
 		}
@@ -740,8 +764,8 @@ void EX(){
 		  }
 		}
 	}
-	//printf("\n EX!");
-	//printf("\nEX out \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXout.opcode, EXout.rs, EXout.rt, EXout.rd, EXout.Imm);
+//	printf("\n EX!");
+//	printf("\nEX out \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", EXout.opcode, EXout.rs, EXout.rt, EXout.rd, EXout.Imm);
 
 	if(CycleCount == 1){
 	  if(EXMEMLatch.opcode == 0){
@@ -779,7 +803,7 @@ void MEM(){
 	   }
 		else if(in.opcode == 5){  //sw
 			MEMrun = 1;
-		   DMem[reg[in.rt]] = in.rs;
+			DMem[mips_reg[in.rt]] = in.rs;
 			rawHaz[in.rt] = 0;
 			if(MEMWBLatch.opcode == 0){
 			  MEMWBLatch = MEMout;
@@ -834,7 +858,7 @@ void WB(){
   struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
     WBrun = 1;
-	 reg[in.rd] = in.rs;
+    mips_reg[in.rd] = in.rs;
 	 rawHaz[in.rd] = 0;
 	 WBcount++;
 	 MEMWBLatch.opcode = 0;
@@ -842,7 +866,7 @@ void WB(){
   }
   else if((in.opcode == 4) || (in.opcode == 6)){   //addi,lw
 	 WBrun = 1;
-	 reg[in.rt] = in.rs;
+	 mips_reg[in.rt] = in.rs;
 //	 printf("WB: in.rt %d \n", in.rt);
 	 rawHaz[in.rt] = 0;
 	 WBcount++;
@@ -873,10 +897,6 @@ void WB(){
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-//char *test = "lw $s5 650($s2)\n";
-//regNumberConverter(progScanner(test));
-
-  
 //////////////////////Initialize variables////////////////////////////  
 
 	//Initialize IFIDLatch
@@ -922,9 +942,7 @@ void main (int argc, char *argv[]){
 	float EXutil;
 	float MEMutil;
 	float WButil;
-  halt = 0;
-  rawHaz[REG_NUM] = 0;
-  reg[REG_NUM] = 0; 
+  halt = 0; 
   stopReceive = halt = 0;//flags for haltSimulation
   DMem = (int *)malloc(500 * sizeof(int));
   int dataAddress=0;
@@ -971,22 +989,22 @@ void main (int argc, char *argv[]){
 	//initialize registers and program counter
   if(sim_mode==1){
     for (i=0;i<REG_NUM;i++){
-			reg[i]=0;
+			mips_reg[i]=0;
 			rawHaz[i] = 0;
     }
   }
 
 	//////////////////////Read from input file to instruction memory/////////////////////
-  char *traceEntry;
+ // char *traceEntry;
   //FILE *ifp;
   //ifp = fopen("./program.txt", "r");
- 
-  traceEntry = malloc(200*sizeof(char)); 
+ char traceEntry[100];
+//  traceEntry = malloc(200*sizeof(char)); 
   char *hs = "haltSimulation\n";
   int instIndex = 0;
 
   fgets(traceEntry, 100, input);                 //get first line
-  while(strcmp(traceEntry, hs) != 0){                  //if it doesn't reach haltSimulation
+  while(strcmp(traceEntry, "haltSimulation\n") != 0){                  //if it doesn't reach haltSimulation
 //  printf("String input is %s \n", traceEntry);      
 		instMem[instIndex++] = parser(regNumberConverter(progScanner(traceEntry)));
     fgets(traceEntry, 100, input);
@@ -997,7 +1015,7 @@ void main (int argc, char *argv[]){
   struct inst finalInst;
 	finalInst.opcode = 8;
 	instMem[instIndex++] = finalInst;
-  fclose(input);
+//  fclose(input);
  
   while(!halt){
 		WB();
@@ -1009,7 +1027,7 @@ void main (int argc, char *argv[]){
 		if(sim_mode==1){
 			printf("cycle: %d register value: ",sim_cycle);
 			for (i=1;i<REG_NUM;i++){
-				printf("%d  ",reg[i]);
+				printf("%d  ",mips_reg[i]);
 			}
 			printf("program counter: %d\n",pgm_c);
 			printf("press ENTER to continue\n");
@@ -1034,8 +1052,9 @@ printf("EXCOUNT: %d\n", sim_cycle);
     // stage following sequence IF ID EX MEM WB		
     fprintf(output,"register values ");
     for (i=1;i<REG_NUM;i++){
-      fprintf(output,"%d  ",reg[i]);
+      fprintf(output,"%d  ",mips_reg[i]);
     } 
+		fprintf(output,"%d\n",pgm_c);
 		fprintf(output,"Total time in cycles: %d\n",sim_cycle);
   }
    
