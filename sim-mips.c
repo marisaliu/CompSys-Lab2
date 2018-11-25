@@ -1003,8 +1003,8 @@ printf("EXCOUNT: %d\n", sim_cycle);
     fprintf(output,"register values ");
     for (i=1;i<REG_NUM;i++){
       fprintf(output,"%d  ",reg[i]);
-    }
-    fprintf(output,"%d\n",pgm_c);
+    } 
+		fprintf(output,"Total time in cycles: %d\n",sim_cycle);
   }
    
   //close input and output files at the end of the simulation
