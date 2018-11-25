@@ -15,11 +15,13 @@
 #define BATCH 0
 #define REG_NUM 32
 
+////////////Enumeration type describing opcodes////////////
+enum instr{ADD=1, SUB=2, MULT=3, LW=4, SW=5, ADDI=6, BEQ=7};                                 //we have to add this but i'm not sure what it's for since we already using structs
 
 ///Structure that holds data about the type of instruction 
 struct inst
 {
-  int opcode;
+  enum instr opcode;
   int rs;
   int rt;
   int rd;
@@ -53,12 +55,7 @@ struct inst
   int c,m,n; 
   long pgm_c;
 
- 
-////////////Enumeration type describing opcodes////////////
-//enum inst{ADD, ADDI, SUB, MULT, BEQ, LW, SW};                                 //we have to add this but i'm not sure what it's for since we already using structs
-
-
-  
+   
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -338,62 +335,65 @@ struct inst parser(char *line){
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
   while (p != NULL){            //loop through until done
- //printf("p is: %s<\n", p);  
+// printf("p is: %s<\n", p);  
     if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
-      arg[0] = 1;                       //add is 1
+      arg[0] = ADD;                       //add is 1
     }
     else if(strcmp(p, "sub")==0){        //sub is 2
-	   arg[0]=2;
+	   arg[0]=SUB;
     }
     else if(strcmp(p, "mul")==0){         //mul is 3
-	   arg[0]=3;
+	   arg[0]=MULT;
     }
     else if(strcmp(p, "lw")==0){            //lw is 4
-      arg[0]=4;
+      	   arg[0]=LW;
     }
     else if(strcmp(p, "sw")==0){                //sw is 5
-	   arg[0]=5;
+	   arg[0]=SW;
     }
     else if(strcmp(p, "addi")==0){           //addi is 6
-	   arg[0]=6;
+	   arg[0]=ADDI;
     }
     else if(strcmp(p, "beq")==0){          //beq is 7
-	   arg[0]=7;
+	   arg[0]=BEQ;
     }
     else{                          //convert p to integer and put it in arg array
       int ll = strlen(p);             //get length of argument
       int isD = 0, i;   
-      for(i=0; i < ll; i++){
-	     if((p[i] == '\n') || (p[i] == '\0')) {
+      for(i=0; i < ll; i++){	
+	     if((p[i] == '\n') || (p[i] == '\0')) { 
 	       isD=3;
 	     }
-	     else if(isdigit(p[i])){ 
+	     else if(isdigit(p[i])){          //check if it's a digit 
 	       isD = 1;
-	     }                   //check if each character is a digit
+	     }
+	     else if((p[i] - '0') == -43){}   //weird end of line thing
 	     else{
-			 isD = 0;             //there is a character that is not a digit, so break
+	       isD = 0;             //there is a character that is not a digit, so break
 	       break;
 	     }
       }
+
       if(isD == 3){                     //if there is a \n
 	     if(ll-1 <= 5){	
-          char withoutn[ll-1];	
+	       char withoutn[ll-1];	
 	       int z;
 	       int j;
 	       for(j=0;j < (ll-1);j++){
 	         if(isdigit(p[j]) != 0)  
 	           withoutn[j] = p[j];
-      	   else{
+      	       else{
 	           Error_InvalidRegister();                                 //checks if any of the last characters are not digits
-	         }
+	           }
 	       }
+	       printf("%d /n", atoi(withoutn));
 	       arg[a] = atoi(withoutn);
-          memset(withoutn, 0, (ll-1));
+               memset(withoutn, 0, (ll-1));
 	     }
 	     else{
 	       //printf("no\n");
 	       Error_ImmediateField();
-        } 
+             } 
       }
       else if(isD == 1){        //if number, convert into int to put into int array
         if(ll == 1){
@@ -410,7 +410,7 @@ struct inst parser(char *line){
       }
       else{                                   //not a number
 	     if((((arg[0]==4)  || (arg[0]==5)) && (c==2)) || (((arg[0]==6)  || (arg[0]==7)) && (c==3))){
-	       //printf("this is %d\n", isD); 
+	       printf("this is %d\n", isD); 
 	       Error_ImmediateField();
 	     }
 	     else{
@@ -512,7 +512,7 @@ struct inst parser(char *line){
         newInst.Imm = arg[3];
       }
       else{
-		 // printf("bbbbbb\n");
+		  //printf("bbbbbb\n");
 	     Error_ImmediateField();                //return too large immediate field
       }
     }
@@ -701,8 +701,27 @@ void EX(){
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
-		else if(in.opcode == 7){  //bq
-			if(in.rs == in.rt) pgm_c += 4*in.Imm;
+		else if(in.opcode == 7){  //beq
+			if(in.rs == in.rt){ 
+			  
+			  if(((pgm_c + 4*in.Imm) < 0) || (pgm_c + 4*in.Imm) >= 512){     //check if the resulting pgm_c is negative or bigger than allotted array
+				printf("Invalid program counter value!");
+				exit(1);
+			  }
+
+			  int x;
+			  struct inst checkHalt;
+			  for(x=pgm_c; x < (pgm_c + (4*in.Imm)); x+=4)                //check if it skips over haltSimulation
+			  {
+				checkHalt = instMem[x/4];
+				if(checkHalt.opcode == 8){
+				  printf("haltSimulation reached!");
+				  exit(1);
+				}
+			  }
+
+			  pgm_c += 4*in.Imm;          //if it passes all checks, increase pgm_c
+			}
 			CycleCount = n;
 			branchUnresolved = 0;
 		}
@@ -841,10 +860,6 @@ void WB(){
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-//char *test = "lw $s5 650($s2)\n";
-//regNumberConverter(progScanner(test));
-
-  
 //////////////////////Initialize variables////////////////////////////  
 
 	//Initialize IFIDLatch
