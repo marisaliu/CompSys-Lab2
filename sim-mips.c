@@ -1002,6 +1002,7 @@ printf("EXCOUNT: %d\n", sim_cycle);
     for (i=1;i<REG_NUM;i++){
       fprintf(output,"%d  ",mips_reg[i]);
     } 
+		fprintf(output,"%d\n",pgm_c);
 		fprintf(output,"Total time in cycles: %d\n",sim_cycle);
   }
    
