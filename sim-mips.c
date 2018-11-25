@@ -701,8 +701,21 @@ void EX(){
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
-		else if(in.opcode == 7){  //bq
-			if(in.rs == in.rt) pgm_c += 4*in.Imm;
+		else if(in.opcode == 7){  //beq
+			if(in.rs == in.rt){ 
+			  int x;
+			  struct inst checkHalt;
+			  for(x=pgm_c; x < (pgm_c + (4*in.Imm)); x+=4)
+			  {
+				checkHalt = instMem[x/4];
+				if(checkHalt.opcode == 8){
+				  printf("haltSimulation reached!");
+				  exit(1);
+				}
+
+			  }
+			  pgm_c += 4*in.Imm;
+			}
 			CycleCount = n;
 			branchUnresolved = 0;
 		}
