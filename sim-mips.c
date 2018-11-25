@@ -80,6 +80,8 @@ char *progScanner(char* currentLine){
   int l=0, r=0;
   char *p;
 
+  assert(currentLine != NULL);
+
 for(p = currentLine; *p; ++p){
   if(*p == '(') {cp[0]=1; l++;}                 //if ( increase left counter
   if(*p == ')'){                             //if ) increase right counter
@@ -137,6 +139,8 @@ char *regNumberConverter(char *line){
   int regNum;
   int pos=0;
   int newPos=0;
+
+  assert(line != NULL);
 
   for(pos=0; pos<strlen(line); pos++){
     if(line[pos] == '$'){ //do nothing until hit a $
@@ -332,7 +336,9 @@ struct inst parser(char *line){
   newInst.rd=0;
   newInst.rt=0;
   newInst.Imm=0;
-  
+ 
+  assert(line != NULL);                               //input line should not be null
+
   char *p = malloc(100*sizeof(char));                //store each section after parse
   //char *instrname = malloc(4 * sizeof(char));         //name of instruction
   int arg[4];             //integer array of argument values 
