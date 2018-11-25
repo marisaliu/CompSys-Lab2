@@ -706,18 +706,24 @@ void EX(){
 		}
 		else if(in.opcode == 7){  //beq
 			if(in.rs == in.rt){ 
+			  
+			  if(((pgm_c + 4*in.Imm) < 0) || (pgm_c + 4*in.Imm) >= 512){     //check if the resulting pgm_c is negative or bigger than allotted array
+				printf("Invalid program counter value!");
+				exit(1);
+			  }
+
 			  int x;
 			  struct inst checkHalt;
-			  for(x=pgm_c; x < (pgm_c + (4*in.Imm)); x+=4)
+			  for(x=pgm_c; x < (pgm_c + (4*in.Imm)); x+=4)                //check if it skips over haltSimulation
 			  {
 				checkHalt = instMem[x/4];
 				if(checkHalt.opcode == 8){
 				  printf("haltSimulation reached!");
 				  exit(1);
 				}
-
 			  }
-			  pgm_c += 4*in.Imm;
+
+			  pgm_c += 4*in.Imm;          //if it passes all checks, increase pgm_c
 			}
 			CycleCount = n;
 			branchUnresolved = 0;
@@ -857,10 +863,6 @@ void WB(){
 ////////////////////////////////MAIN/////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void main (int argc, char *argv[]){
-//char *test = "lw $s5 650($s2)\n";
-//regNumberConverter(progScanner(test));
-
-  
 //////////////////////Initialize variables////////////////////////////  
 
 	//Initialize IFIDLatch
