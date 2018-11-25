@@ -55,9 +55,7 @@ struct inst
   int c,m,n; 
   long pgm_c;
   int IFrun=0, IDrun=0, EXrun=0, MEMrun=0, WBrun=0;
-
-
-
+   
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +70,7 @@ exit(1);
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
 //  printf("Input line: %s \n", currentLine);
-  char copy[strlen(currentLine)];   //make empty array of size currentLine
-  char * newLine = (char *)malloc(strlen(currentLine)*sizeof(char));
+  char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
   int cp[2]={0};
@@ -89,29 +86,27 @@ for(p = currentLine; *p; ++p){
   }
 
   if((isalpha(*p) != 0) || (isdigit(*p) != 0) || (*p == '$') || (*p == ' ')){
-	copy[pos++] =*p;
+	currentLine[pos++] =*p;
 
   }
   else if((*p=='(') || (*p==')')){
-	 copy[pos++] = ' ';
+	 currentLine[pos++] = ' ';
   }
 
 }
-  copy[pos]='\0';
+  currentLine[pos]='\0';
 
 if(l != r) Error_ParanthesesMismatch();                //if left and right don't match, throw error
 
 //printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
 int x;
-for(i=x=0; copy[i]; ++i){
-  if(!isspace(copy[i]) || (i > 0 && !isspace(copy[i-1]))) copy[x++] = copy[i];
+for(i=x=0; currentLine[i]; ++i){
+  if(!isspace(currentLine[i]) || (i > 0 && !isspace(currentLine[i-1]))) currentLine[x++] = currentLine[i];
 }
-copy[x] = '\0';
-//strcpy(newLine, copy);
-newLine = copy;
-//printf("Fixed spaces: %s\n", newLine);
-return newLine;
+currentLine[x] = '\0';
+//printf("Fixed spaces: %s\n", currentLine);
+return currentLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -290,7 +285,7 @@ char *regNumberConverter(char *line){
   
   char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
 
-  //printf("After regNumberConverter: %s\n", newNewLine);
+  printf("After regNumberConverter: %s\n", newNewLine);
   return newNewLine;
 }
 
@@ -535,7 +530,6 @@ printf("Imm: %d\n", newInst.Imm);
 */
   return newInst;
 }
-
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -882,6 +876,7 @@ void WB(){
     if(in.opcode == 8){
 		halt = 1;
 		WBrun = 0;
+//		printf("wbhalt\n");
 	 }
 	 //Return error // assertion
 	 else if(in.opcode != 0){
@@ -1019,6 +1014,7 @@ void main (int argc, char *argv[]){
  
   while(!halt){
 		WB();
+		if(halt) break;
 		MEM();
 		EX();
 		ID();
@@ -1038,11 +1034,16 @@ void main (int argc, char *argv[]){
 printf("EXCOUNT: %d\n", sim_cycle);
 
   //output statistics in batch mode
-	IFutil = (float) IFcount/ sim_cycle;
-	IDutil = (float) IDcount/sim_cycle;
-	EXutil = (float) EXcount/sim_cycle;
-	MEMutil = (float) MEMcount/sim_cycle;
-	WButil = (float) WBcount/sim_cycle;
+	if(sim_cycle != 0){
+     IFutil = (float) IFcount/ sim_cycle;
+	  IDutil = (float) IDcount/sim_cycle;
+	  EXutil = (float) EXcount/sim_cycle;
+	  MEMutil = (float) MEMcount/sim_cycle;
+	  WButil = (float) WBcount/sim_cycle;
+	}
+	else{
+	  IFutil = IDutil = EXutil = MEMutil = WButil = 0;
+	}
   ///////////////////////output statistics in batch mode/////////////////////////:
 
   if(sim_mode==0){
@@ -1065,4 +1066,3 @@ printf("EXCOUNT: %d\n", sim_cycle);
 //	return 0;
 }
   
-
