@@ -511,7 +511,7 @@ struct inst parser(char *line){
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
-//Fetches instruction from instruction memory
+//Fetches instruction from instruction memory and takes (c) cycle time
 //If there is a branch that is unresolved finish resolving the branch before continuing
 void IF(){
   static int CycleCount = 0;
@@ -734,6 +734,17 @@ void EX(){
 ////////////////////////////////////////////////////////////////////
 /////////////////////////MEM////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
+/*If the instruction is a lw or sw MEM will take c cycle times 
+ * (the amount of cycles to access memory). 
+ * If it is a lw it will
+ * take the data in the DMEM at the calculated index and put the value 
+ * into rs in the inst struct. 
+ * If it is a sw it will load the calculated value into the DMEM at the 
+ * specific index
+ *If it is any other instruction it will take 1 cycle to complete
+ and do nothing
+ If there is an illegal opcode it will return an error
+ */
 void MEM(){
 	static int CycleCount = 0;
 	if(CycleCount == 0){
@@ -794,6 +805,13 @@ void MEM(){
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////WB/////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
+//*
+//If the instruction is an add, sub, mul, addi, or lw it will write the 
+//calculated value into the specific registor. It is is sw or beq it will
+//not write anything into any of the registers. If there is a haltSimulation (8)
+//then the WB stage will turn off. If there are any other opcodes then
+//it will stop and return an error
+//*/
 void WB(){
   struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
