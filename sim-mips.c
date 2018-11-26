@@ -770,7 +770,7 @@ void MEM(){
 			 MEMWBLatch = MEMout; 
 			 CycleCount = c;
 		  }
-	   }
+	        }
 		else if(in.opcode == 5){  //sw
 			MEMrun = 1;
 			DMem[mips_reg[in.rt]] = in.rs;
