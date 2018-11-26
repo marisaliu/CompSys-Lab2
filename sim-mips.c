@@ -55,6 +55,8 @@ struct inst
   int c,m,n; 
   long pgm_c;
 
+  int IFrun=0, IDrun=0, EXrun=0, MEMrun=0, WBrun=0;
+
    
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
@@ -70,6 +72,8 @@ exit(1);
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
 //  printf("Input line: %s \n", currentLine);
+  assert(currentLine != NULL);                     //line shouldn't be NULL
+  
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
@@ -94,7 +98,7 @@ for(p = currentLine; *p; ++p){
   }
 
 }
-  currentLine[pos]='\0';
+  //currentLine[pos]='\0';
 
 if(l != r) Error_ParanthesesMismatch();                //if left and right don't match, throw error
 
@@ -133,6 +137,8 @@ char *regNumberConverter(char *line){
   int pos=0;
   int newPos=0;
 
+	assert(line != NULL);
+
   for(pos=0; pos<strlen(line); pos++){
     if(line[pos] == '$'){ //do nothing until hit a $
       pos++;
@@ -149,7 +155,7 @@ char *regNumberConverter(char *line){
 	           newLine[newPos++] = regChar[1];
 	         }
 	         else{
-	           newLine[newPos++] = regChar[0];	//if single digi
+	           newLine[newPos++] = regChar[0];	//if single digit
 	         }
 	       }
 	       else{
@@ -327,7 +333,9 @@ struct inst parser(char *line){
   newInst.rd=0;
   newInst.rt=0;
   newInst.Imm=0;
-  
+
+	assert(line != NULL);
+
   char *p = malloc(100*sizeof(char));                //store each section after parse
   //char *instrname = malloc(4 * sizeof(char));         //name of instruction
   int arg[4];             //integer array of argument values 
@@ -373,6 +381,8 @@ struct inst parser(char *line){
 	       break;
 	     }
       }
+
+	assert((arg[0] > 0) && (arg[0] <= 7));
 
       if(isD == 3){                     //if there is a \n
 	     if(ll-1 <= 5){	
@@ -530,7 +540,6 @@ printf("Imm: %d\n", newInst.Imm);
 */
   return newInst;
 }
-
 /////////////////////////////////////////////////////////////////////
 ///////////////////////IF////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -1028,4 +1037,3 @@ printf("EXCOUNT: %d\n", sim_cycle);
 //	return 0;
 }
   
-
