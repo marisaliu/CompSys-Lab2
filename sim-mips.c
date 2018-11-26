@@ -69,7 +69,6 @@ exit(1);
 //Input a string and get rid of any extra punction, spaces or parentheses///
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
-//  printf("Input line: %s \n", currentLine);
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
@@ -96,17 +95,15 @@ for(p = currentLine; *p; ++p){
 }
   currentLine[pos]='\0';
 
-if(l != r) Error_ParanthesesMismatch();                //if left and right don't match, throw error
+	if(l != r) Error_ParanthesesMismatch();                //if left and right don't match, throw error
 
-//printf("Removed punctuation: %s \n", currentLine);
 ///////////remove and leave only 1 space
-int x;
-for(i=x=0; currentLine[i]; ++i){
-  if(!isspace(currentLine[i]) || (i > 0 && !isspace(currentLine[i-1]))) currentLine[x++] = currentLine[i];
-}
-currentLine[x] = '\0';
-//printf("Fixed spaces: %s\n", currentLine);
-return currentLine;
+	int x;
+	for(i=x=0; currentLine[i]; ++i){
+		if(!isspace(currentLine[i]) || (i > 0 && !isspace(currentLine[i-1]))) currentLine[x++] = currentLine[i];
+	}
+	currentLine[x] = '\0';
+	return currentLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -126,7 +123,6 @@ exit(1);
 //start with $ to numbers and returns error if invalid register/////////////
 ///////////////////////////////////////////////////////////////////////////
 char *regNumberConverter(char *line){
-  //printf("Reading in: %s \n", line);
   char *newLine = (char *)malloc(strlen(line)*sizeof(char));
   char regChar[3];
   int regNum;
@@ -329,13 +325,11 @@ struct inst parser(char *line){
   newInst.Imm=0;
   
   char *p = malloc(100*sizeof(char));                //store each section after parse
-  //char *instrname = malloc(4 * sizeof(char));         //name of instruction
   int arg[4];             //integer array of argument values 
   int c=0, a=1;               //counters
   //parse by whitespace and create an array of strings/numbers 
   p = strtok (line, " ");      //get first argument (should be name of instruction)
-  while (p != NULL){            //loop through until done
-// printf("p is: %s<\n", p);  
+  while (p != NULL){            //loop through until done  
     if(strcmp(p, "add") == 0){                       //if first arg, put it into instrname
       arg[0] = ADD;                       //add is 1
     }
@@ -391,7 +385,6 @@ struct inst parser(char *line){
                memset(withoutn, 0, (ll-1));
 	     }
 	     else{
-	       //printf("no\n");
 	       Error_ImmediateField();
              } 
       }
@@ -403,7 +396,6 @@ struct inst parser(char *line){
           arg[a] = atoi(p);
 	     }
 	     else{
-	       //printf("there\n");
 		    Error_ImmediateField();                //throw immediate field error 
 	     }
 	     a++;                           //increment counter for index
@@ -414,7 +406,6 @@ struct inst parser(char *line){
 	       Error_ImmediateField();
 	     }
 	     else{
-	      // printf("nani");
 	       Error_InvalidRegister();                                 //checks if any of the last characters are not digits
 	     }
       }
@@ -428,7 +419,6 @@ struct inst parser(char *line){
     int i;
     for(i=1;i < 4; i++)
     {
-	//printf("%d \n", arg[i]);
 	   if((arg[i] <= 31) && (arg[i] >= 0)){
 	     newInst.opcode = arg[0];
 	     newInst.rs = arg[2];
@@ -471,12 +461,10 @@ struct inst parser(char *line){
 	       newInst.Imm = arg[2];
         }
         else{
-	  //     printf("%d", arg[2]);
 	       Error_MemoryMisalignment();           //return error memory misalignment error
         }
       }
       else{
-	//	  printf("aaaaa\n");
 	     Error_ImmediateField();                   //return error, either too small or bigger than largest unsigned 16-bit number
       }
     }
@@ -502,7 +490,6 @@ struct inst parser(char *line){
 	     newInst.Imm = arg[3];
       }
       else{
-	//printf("here\n");
 	     Error_ImmediateField();                                //return immediate field too big
       }
     }
@@ -512,7 +499,6 @@ struct inst parser(char *line){
         newInst.Imm = arg[3];
       }
       else{
-		  //printf("bbbbbb\n");
 	     Error_ImmediateField();                //return too large immediate field
       }
     }
@@ -520,14 +506,6 @@ struct inst parser(char *line){
   else{
     Error_IllegalOpcode();              //return illegal opcode error because it's not any of the valid ones
   }
-  //*/
-	
-/*printf("Opcode: %d\n", newInst.opcode);
-printf("rs: %d\n", newInst.rs);
-printf("rd: %d\n", newInst.rd);
-printf("rt: %d\n", newInst.rt);
-printf("Imm: %d\n", newInst.Imm);
-*/
   return newInst;
 }
 /////////////////////////////////////////////////////////////////////
@@ -559,17 +537,9 @@ void IF(){
 	 }
   }
   else if(CycleCount>0){
-	 // printf("CycleCount: %d\n", CycleCount);
 	 CycleCount--;
 	 IFcount++;
   }
-/*
-printf("\nIFcount %d", IFcount);
-printf("\nCycle count: %d\nPC: %d\nBranch unresolved: %d", CycleCount, pgm_c, branchUnresolved);
-printf("\ninstMem: \n  opcode: %d\n  rs: %d\n  rt: %d\n  rd: %d\n  imm: %d", instMem[pgm_c/4].opcode, instMem[pgm_c/4].rs, instMem[pgm_c/4].rt, instMem[pgm_c/4].rd, instMem[pgm_c/4].Imm);
-printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.opcode, IFIDLatch.rs, IFIDLatch.rt, IFIDLatch.rd, IFIDLatch.Imm);
-*/
-  //printf("IFrun %d\n", IFrun);
 }
 
 
@@ -587,8 +557,6 @@ printf("\nIFIDLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IFIDLatch.
 void ID(){
   struct inst in = IFIDLatch;
   struct inst out = in;
-//	printf("in.opcode: %d\n", in.opcode);
-//	printf("IDEXLatch.opcode %d\n", IDEXLatch.opcode);
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul    
 	 IDrun = 1;
 	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
@@ -601,7 +569,6 @@ void ID(){
 		  IDcount++;
 		}
 	 }
-	 //else printf("hazard");
   }
   else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
     IDrun = 1;
@@ -614,7 +581,6 @@ void ID(){
 		  IDcount++;
 		} 
 	 }
-//	 else printf("ID rawHaz addi: %d\n", rawHaz[in.rt]);
   }
   else if(in.opcode == 5){          //SW	
     IDrun = 1;
@@ -627,7 +593,6 @@ void ID(){
 		  IDcount++;
 		}
 	 } 
-	 //else printf("hazard");
   }
   else if(in.opcode == 7){ //beq	
     IDrun = 1;
@@ -641,7 +606,6 @@ void ID(){
 		  IDcount++;
 		}
 	 }
-	 //else printf("hazard");
   }
   else{
 	 //halt simulation
@@ -659,9 +623,6 @@ void ID(){
 	   exit(0);
 	 }
   }
-//	printf("\nID!: ");
-//	printf("\nIDEXLatch \nopcode: %d\nrs: %d\nrt: %d\nrd: %d\nimm: %d\n", IDEXLatch.opcode, IDEXLatch.rs, IDEXLatch.rt, IDEXLatch.rd, IDEXLatch.Imm);
-//printf("IDrun: %d\n", IDrun);
 }
 
 
