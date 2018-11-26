@@ -70,7 +70,7 @@ exit(1);
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
 
-  assert(currentLine != NULL);
+  assert(currentLine != NULL);          //ASSERTION
 
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
@@ -127,7 +127,7 @@ exit(1);
 ///////////////////////////////////////////////////////////////////////////
 char *regNumberConverter(char *line){
 
-  assert(line != NULL);
+  assert(line != NULL);             //ASSERTION
 
   char *newLine = (char *)malloc(strlen(line)*sizeof(char));
   char regChar[3];
@@ -323,7 +323,7 @@ exit(1);
 
 struct inst parser(char *line){
   
-  assert(line != NULL);
+  assert(line != NULL);       //ASSERTION
 
   struct inst newInst;
   newInst.opcode=0;
@@ -423,7 +423,7 @@ struct inst parser(char *line){
   }
    //////////////actually check which instructions it is and put the arguments in the right variables in the inst
 
-	assert(arg[0] != 0);
+	assert(arg[0] != 0);                          //ASSERTION
 
   if((arg[0]==1) || (arg[0]==2) || (arg[0])==3){      //if opcode is "add" or "sub" or "mul", respectively
     int i;
@@ -539,7 +539,7 @@ void IF(){
   if(CycleCount == 1){
 	 if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
 		IFIDLatch = instMem[pgm_c/4];
-		assert(IFIDLatch.opcode != 0);
+		assert(IFIDLatch.opcode != 0);                  //ASSERTION
 	   if(instMem[pgm_c/4].opcode == 7){    
 		  branchUnresolved = 1;
 	   }
@@ -631,7 +631,7 @@ void ID(){
       //Return error // assertion
 	 else if(in.opcode != 0){
 	   printf("ID: OPCODE ERROR\n");
-	   assert(in.opcode<8 && in.opcode>0);
+	   assert(in.opcode<8 && in.opcode>0);              //ASSERTION
 	   exit(0);
 	 }
   }
@@ -722,7 +722,7 @@ void EX(){
 		  }
 		  else if(in.opcode != 0){
 			 printf("EX: OPCODE ERROR\n");
-		    assert(in.opcode<8 && in.opcode>0);
+		    assert(in.opcode<8 && in.opcode>0);                  //ASSERTION
 		    exit(0);
 		  }
 		}
@@ -788,7 +788,7 @@ void MEM(){
 		  //invalid opcode
 		  else if((in.opcode<0) || (in.opcode>8)){
 			 printf("MEM: INVALID OPCODE\n");
-			 assert(in.opcode>0 && in.opcode<8);
+			 assert(in.opcode>0 && in.opcode<8);                     //ASSERTION
 			 exit(0);
 		  }
 		  else{
@@ -853,7 +853,7 @@ void WB(){
 	 //Return error // assertion
 	 else if(in.opcode != 0){
 	   printf("WB: OPCODE ERROR\n");
-	   assert(in.opcode<8 && in.opcode>0);
+	   assert(in.opcode<8 && in.opcode>0);                  //ASSERTION
 	   exit(0);
 	 }
   }
@@ -937,7 +937,7 @@ void main (int argc, char *argv[]){
     c=atoi(argv[4]);
     if(!(m && n && c)){
 		printf("Cycle time cannot be zero\n");
-		assert(m && n && c);
+		assert(m && n && c);                                      //ASSERTION
 		exit(1);
 	 }
 	 input=fopen(argv[5],"r");
@@ -1013,7 +1013,7 @@ void main (int argc, char *argv[]){
 	else{
 	  IFutil = IDutil = EXutil = MEMutil = WButil = 0;
 	}
-	assert((IFutil <= 1) || (IDutil <= 1) || (EXutil <= 1) || (MEMutil <= 1) || (WButil <= 1));
+	assert((IFutil <= 1) || (IDutil <= 1) || (EXutil <= 1) || (MEMutil <= 1) || (WButil <= 1));       //ASSERTION
   ///////////////////////output statistics in batch mode/////////////////////////:
 
   if(sim_mode==0){
