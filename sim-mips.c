@@ -898,7 +898,7 @@ void main (int argc, char *argv[]){
 	float WButil;
   halt = 0; 
   stopReceive = halt = 0;//flags for haltSimulation
-  DMem = (int *)malloc(500 * sizeof(int));
+  DMem = (int *)calloc(500, sizeof(int));
   int dataAddress=0;
 
 	////////////////////////Set cmdline arguements to variables/////////////////////////
