@@ -16,7 +16,7 @@
 #define REG_NUM 32
 
 ////////////Enumeration type describing opcodes////////////
-enum instr{ADD=1, SUB=2, MULT=3, LW=4, SW=5, ADDI=6, BEQ=7};                                 //we have to add this but i'm not sure what it's for since we already using structs
+enum instr{ADD=1, SUB=2, MULT=3, LW=4, SW=5, ADDI=6, BEQ=7};                                 
 
 ///Structure that holds data about the type of instruction 
 struct inst
@@ -71,7 +71,6 @@ exit(1);
 //Input a string and get rid of any extra punction, spaces or parentheses///
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
-//  printf("Input line: %s \n", currentLine);
   assert(currentLine != NULL);                     //line shouldn't be NULL
   
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
@@ -331,7 +330,7 @@ struct inst parser(char *line){
   newInst.rt=0;
   newInst.Imm=0;
 
-	assert(line != NULL);
+	assert(line != NULL);            //input shouldn't be NULL
 
   char *p = malloc(100*sizeof(char));                //store each section after parse
   int arg[4];             //integer array of argument values 
@@ -377,7 +376,7 @@ struct inst parser(char *line){
 	     }
       }
 
-	assert((arg[0] > 0) && (arg[0] <= 7));                    //opcode should be valid
+	assert((arg[0] > 0) && (arg[0] <= 7));                    //opcode should be valid, haltSimulation should not be affected
 
       if(isD == 3){                     //if there is a \n
 	     if(ll-1 <= 5){	
@@ -391,7 +390,6 @@ struct inst parser(char *line){
 	           Error_InvalidRegister();                                 //checks if any of the last characters are not digits
 	           }
 	       }
-	       printf("%d /n", atoi(withoutn));
 	       arg[a] = atoi(withoutn);
                memset(withoutn, 0, (ll-1));
 	     }
