@@ -632,7 +632,7 @@ void ID(){
       //Return error // assertion
 	 else if(in.opcode != 0){
 	   printf("ID: OPCODE ERROR\n");
-	   assert(in.opcode<8 || in.opcode>0);
+	   assert(in.opcode<8 && in.opcode>0);
 	   exit(0);
 	 }
   }
@@ -789,7 +789,7 @@ void MEM(){
 		  //invalid opcode
 		  else if((in.opcode<0) || (in.opcode>8)){
 			 printf("MEM: INVALID OPCODE\n");
-			 assert(in.opcode == 4 || in.opcode == 5);
+			 assert(in.opcode>0 && in.opcode<8);
 			 exit(0);
 		  }
 		  else{
@@ -854,7 +854,7 @@ void WB(){
 	 //Return error // assertion
 	 else if(in.opcode != 0){
 	   printf("WB: OPCODE ERROR\n");
-	   assert(in.opcode<7 || in.opcode>0);
+	   assert(in.opcode<8 && in.opcode>0);
 	   exit(0);
 	 }
   }
@@ -938,6 +938,7 @@ void main (int argc, char *argv[]){
     c=atoi(argv[4]);
     if(!(m && n && c)){
 		printf("Cycle time cannot be zero\n");
+		assert(m && n && c);
 		exit(1);
 	 }
 	 input=fopen(argv[5],"r");
