@@ -905,7 +905,11 @@ void main (int argc, char *argv[]){
     m=atoi(argv[2]);
     n=atoi(argv[3]);
     c=atoi(argv[4]);
-    input=fopen(argv[5],"r");
+    if(!(m && n && c)){
+		printf("Cycle time cannot be zero\n");
+		exit(1);
+	 }
+	 input=fopen(argv[5],"r");
     output=fopen(argv[6],"w");
 		
   }
