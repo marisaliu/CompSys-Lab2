@@ -16,7 +16,7 @@
 #define REG_NUM 32
 
 ////////////Enumeration type describing opcodes////////////
-enum instr{ADD=1, SUB=2, MULT=3, LW=4, SW=5, ADDI=6, BEQ=7};                                 //we have to add this but i'm not sure what it's for since we already using structs
+enum instr{ADD=1, SUB=2, MULT=3, LW=4, SW=5, ADDI=6, BEQ=7};                                 
 
 ///Structure that holds data about the type of instruction 
 struct inst
@@ -54,7 +54,9 @@ struct inst
   int mode; 
   int c,m,n; 
   long pgm_c;
+
   int IFrun=0, IDrun=0, EXrun=0, MEMrun=0, WBrun=0;
+
    
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////FUNCTIONS/////////////////////////////////////////////////////////
@@ -69,6 +71,8 @@ exit(1);
 //Input a string and get rid of any extra punction, spaces or parentheses///
 ////////////////////////////////////////////////////////////////////////////
 char *progScanner(char* currentLine){
+  assert(currentLine != NULL);                     //line shouldn't be NULL
+  
   char copy[strlen(currentLine)+1];   //make empty array of size currentLine
   int i;
   int pos=0;
@@ -93,7 +97,7 @@ for(p = currentLine; *p; ++p){
   }
 
 }
-  currentLine[pos]='\0';
+  //currentLine[pos]='\0';
 
 	if(l != r) Error_ParanthesesMismatch();                //if left and right don't match, throw error
 
@@ -129,6 +133,8 @@ char *regNumberConverter(char *line){
   int pos=0;
   int newPos=0;
 
+	assert(line != NULL);
+
   for(pos=0; pos<strlen(line); pos++){
     if(line[pos] == '$'){ //do nothing until hit a $
       pos++;
@@ -145,7 +151,7 @@ char *regNumberConverter(char *line){
 	           newLine[newPos++] = regChar[1];
 	         }
 	         else{
-	           newLine[newPos++] = regChar[0];	//if single digi
+	           newLine[newPos++] = regChar[0];	//if single digit
 	         }
 	       }
 	       else{
@@ -323,7 +329,9 @@ struct inst parser(char *line){
   newInst.rd=0;
   newInst.rt=0;
   newInst.Imm=0;
-  
+
+	assert(line != NULL);            //input shouldn't be NULL
+
   char *p = malloc(100*sizeof(char));                //store each section after parse
   int arg[4];             //integer array of argument values 
   int c=0, a=1;               //counters
@@ -368,6 +376,8 @@ struct inst parser(char *line){
 	     }
       }
 
+	assert((arg[0] > 0) && (arg[0] <= 7));                    //opcode should be valid, haltSimulation should not be affected
+
       if(isD == 3){                     //if there is a \n
 	     if(ll-1 <= 5){	
 	       char withoutn[ll-1];	
@@ -380,7 +390,6 @@ struct inst parser(char *line){
 	           Error_InvalidRegister();                                 //checks if any of the last characters are not digits
 	           }
 	       }
-	       printf("%d /n", atoi(withoutn));
 	       arg[a] = atoi(withoutn);
                memset(withoutn, 0, (ll-1));
 	     }
@@ -402,11 +411,10 @@ struct inst parser(char *line){
       }
       else{                                   //not a number
 	     if((((arg[0]==4)  || (arg[0]==5)) && (c==2)) || (((arg[0]==6)  || (arg[0]==7)) && (c==3))){
-	       printf("this is %d\n", isD); 
 	       Error_ImmediateField();
 	     }
 	     else{
-	       Error_InvalidRegister();                                 //checks if any of the last characters are not digits
+	       Error_InvalidRegister();                             //throw error
 	     }
       }
     }
@@ -506,6 +514,7 @@ struct inst parser(char *line){
   else{
     Error_IllegalOpcode();              //return illegal opcode error because it's not any of the valid ones
   }
+
   return newInst;
 }
 /////////////////////////////////////////////////////////////////////
@@ -516,30 +525,28 @@ struct inst parser(char *line){
 void IF(){
   static int CycleCount = 0;
 
-  if(CycleCount == 0){
-	 CycleCount = c;
-	 IFrun=1;
-	 if(instMem[pgm_c/4].opcode == 8){
-		stopReceive=1;
-		IFrun = 0;
-		if(IFIDLatch.opcode == 0) IFIDLatch = instMem[pgm_c/4];
-	 }
-  }
+  if(CycleCount == 0) CycleCount = c;
   if(CycleCount == 1){
-	 if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)){
-		IFIDLatch = instMem[pgm_c/4];          
-	   if(instMem[pgm_c/4].opcode == 7){    
+	 if((IFIDLatch.opcode == 0)&&(branchUnresolved == 0)&&(!stopReceive)){
+		IFIDLatch = instMem[pgm_c/4];
+		assert(IFIDLatch.opcode != 0);                            //opcode shouldn't be 0 if just pulled an instruction
+		if(IFIDLatch.opcode == 7){    
 		  branchUnresolved = 1;
-	   }
-		if(!stopReceive) pgm_c +=4;
-		IFcount++;
-		CycleCount--;
+		}
+		if(IFIDLatch.opcode == 8) stopReceive=1;
+		else{
+		//	 printf("IF\n");
+		  pgm_c +=4;
+		  IFcount++;
+		  CycleCount--;
+		}
 	 }
   }
   else if(CycleCount>0){
 	 CycleCount--;
 	 IFcount++;
   }
+
 }
 
 
@@ -557,8 +564,8 @@ void IF(){
 void ID(){
   struct inst in = IFIDLatch;
   struct inst out = in;
+
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3)){  //add, sub, or mul    
-	 IDrun = 1;
 	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  rawHaz[in.rd] = 1; 		
@@ -571,8 +578,7 @@ void ID(){
 	 }
   }
   else if((in.opcode == 4) || (in.opcode == 6)){         //LW or addi
-    IDrun = 1;
-	 if(!rawHaz[in.rs]){
+    if(!rawHaz[in.rs]){
 		if(IDEXLatch.opcode == 0){
 		  rawHaz[in.rt] = 1;
 		  out.rs = mips_reg[in.rs];
@@ -583,8 +589,7 @@ void ID(){
 	 }
   }
   else if(in.opcode == 5){          //SW	
-    IDrun = 1;
-	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  rawHaz[in.rt] = 1;
 		  out.rs = mips_reg[in.rs];
@@ -595,8 +600,7 @@ void ID(){
 	 } 
   }
   else if(in.opcode == 7){ //beq	
-    IDrun = 1;
-	 if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
+    if(!(rawHaz[in.rs] || rawHaz[in.rt])){               
 		if(IDEXLatch.opcode == 0){                                  
 		  branchUnresolved = 1;                                      
 		  out.rs = mips_reg[in.rs];
@@ -611,7 +615,6 @@ void ID(){
 	 //halt simulation
 	 if(in.opcode == 8){
 		stopReceive = 1;
-		IDrun = 0;
 		if(IDEXLatch.opcode == 0){
 		  IDEXLatch.opcode = 8;
 		}
@@ -623,6 +626,7 @@ void ID(){
 	   exit(0);
 	 }
   }
+
 }
 
 
@@ -642,44 +646,37 @@ void EX(){
 		struct inst in = IDEXLatch;
 		EXout = in;
 		if(in.opcode == 1){       //add
-			EXrun = 1;
-		   EXout.rs = in.rs + in.rt;
+			EXout.rs = in.rs + in.rt;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 2){ //sub
-			EXrun = 1;
-		   EXout.rs = in.rs - in.rt;
+			EXout.rs = in.rs - in.rt;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 3){  //mul
-			EXrun = 1;
-		   EXout.rs = in.rt*in.rs;
+			EXout.rs = in.rt*in.rs;
 			if(in.rd == 0) EXout.rs = 0;
 			CycleCount = m;
 		}
 		else if(in.opcode == 4){  //lw
-			EXrun = 1;
-		   EXout.rs = in.rs + (in.Imm/4);
+			EXout.rs = in.rs + (in.Imm/4);
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 5){  //sw
-			EXrun = 1;
-		   EXout.rs = in.rs + (in.Imm/4);
+			EXout.rs = in.rs + (in.Imm/4);
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 6){  //addi
-			EXrun = 1;
-		   EXout.rs = in.rs + in.Imm;
+			EXout.rs = in.rs + in.Imm;
 			if(in.rt == 0) EXout.rs = 0;
 			CycleCount = n;
 		}
 		else if(in.opcode == 7){  //beq
-			EXrun = 1;
-		    if(in.rs == in.rt){ 
+			if(in.rs == in.rt){ 
 			  
 			  if(((pgm_c + 4*in.Imm) < 0) || (pgm_c + 4*in.Imm) >= 512){     //check if the resulting pgm_c is negative or bigger than allotted array
 				printf("Invalid program counter value!");
@@ -705,7 +702,6 @@ void EX(){
 		else{
       //Return error // assertion
 		  if(in.opcode == 8){
-			 EXrun = 0;
 			 if(EXMEMLatch.opcode == 0) EXMEMLatch.opcode = 8;
 		  }
 		  else if(in.opcode != 0){
@@ -715,6 +711,7 @@ void EX(){
 		  }
 		}
 	}
+
 	if(CycleCount == 1){
 	  if(EXMEMLatch.opcode == 0){
 		 EXMEMLatch = EXout;
@@ -751,15 +748,13 @@ void MEM(){
 		struct inst in = EXMEMLatch;
 		MEMout = in;
 		if(in.opcode == 4){  // lw
-		  MEMrun = 1;	
-		  MEMout.rs = DMem[in.rs];
-		  if(MEMWBLatch.opcode == 0){
-			 MEMWBLatch = MEMout; 
-			 CycleCount = c;
-		  }
-	   }
+			MEMout.rs = DMem[in.rs];
+			if(MEMWBLatch.opcode == 0){
+			  MEMWBLatch = MEMout; 
+			  CycleCount = c;
+			}
+	  }
 		else if(in.opcode == 5){  //sw
-			MEMrun = 1;
 			DMem[mips_reg[in.rt]] = in.rs;
 			rawHaz[in.rt] = 0;
 			if(MEMWBLatch.opcode == 0){
@@ -770,8 +765,7 @@ void MEM(){
 		else{
 		  //halt simulation
 		  if(in.opcode == 8){
-			 MEMrun = 0;
-			 if(MEMWBLatch.opcode == 0) MEMWBLatch.opcode = 8;
+			  if(MEMWBLatch.opcode == 0) MEMWBLatch.opcode = 8;
 		  }
 		  //invalid opcode
 		  else if((in.opcode<0) || (in.opcode>8)){
@@ -780,6 +774,8 @@ void MEM(){
 			 exit(0);
 		  }
 		  else{
+			// MEMWBLatch = in;
+
 			 if(in.opcode != 0) MEMrun = 1;
 			 CycleCount = 1;
 		  }
@@ -800,8 +796,6 @@ void MEM(){
 }
 
 
-
-
 /////////////////////////////////////////////////////////////////////////////
 //////////////////////////////WB/////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -815,14 +809,12 @@ void MEM(){
 void WB(){
   struct inst in = MEMWBLatch;
   if((in.opcode == 1) || (in.opcode == 2) || (in.opcode==3) ){  //add, sub, mul
-    WBrun = 1;
-    mips_reg[in.rd] = in.rs;
+   mips_reg[in.rd] = in.rs;
 	 rawHaz[in.rd] = 0;
 	 WBcount++;
 	 MEMWBLatch.opcode = 0;
   }
   else if((in.opcode == 4) || (in.opcode == 6)){   //addi,lw
-	 WBrun = 1;
 	 mips_reg[in.rt] = in.rs;
 	 rawHaz[in.rt] = 0;
 	 WBcount++;
@@ -830,10 +822,10 @@ void WB(){
   }
   else if(in.opcode == 5 || in.opcode == 7){  //sw beq
 	 MEMWBLatch.opcode = 0;
-  	 WBrun = 1;
   }
   else{
     //halt simulation
+    if(in.opcode == 8) halt = 1;
     if(in.opcode == 8){
 		halt = 1;
 		WBrun = 0;
@@ -963,20 +955,18 @@ void main (int argc, char *argv[]){
     fgets(traceEntry, 100, input);
   }
 ///////////////////////Run mips instructions through pipleine///////////////////////////
-
-  
+ 
   struct inst finalInst;
 	finalInst.opcode = 8;
 	instMem[instIndex++] = finalInst;
  
   while(!halt){
 		WB();
-		if(halt) break;
 		MEM();
 		EX();
 		ID();
 		IF();
-		if(WBrun || MEMrun || EXrun || IDrun || IFrun)sim_cycle++;
+		sim_cycle++;
 		if(sim_mode==1){
 			printf("cycle: %d register value: ",sim_cycle);
 			for (i=1;i<REG_NUM;i++){
@@ -991,16 +981,11 @@ void main (int argc, char *argv[]){
 printf("EXCOUNT: %d\n", sim_cycle);
 
   //output statistics in batch mode
-	if(sim_cycle != 0){
-     IFutil = (float) IFcount/ sim_cycle;
-	  IDutil = (float) IDcount/sim_cycle;
-	  EXutil = (float) EXcount/sim_cycle;
-	  MEMutil = (float) MEMcount/sim_cycle;
-	  WButil = (float) WBcount/sim_cycle;
-	}
-	else{
-	  IFutil = IDutil = EXutil = MEMutil = WButil = 0;
-	}
+	IFutil = (float) IFcount/ sim_cycle;
+	IDutil = (float) IDcount/sim_cycle;
+	EXutil = (float) EXcount/sim_cycle;
+	MEMutil = (float) MEMcount/sim_cycle;
+	WButil = (float) WBcount/sim_cycle;
   ///////////////////////output statistics in batch mode/////////////////////////:
 
   if(sim_mode==0){
