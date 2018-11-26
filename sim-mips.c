@@ -1013,6 +1013,7 @@ void main (int argc, char *argv[]){
 	else{
 	  IFutil = IDutil = EXutil = MEMutil = WButil = 0;
 	}
+	assert((IFutil <= 1) || (IDutil <= 1) || (EXutil <= 1) || (MEMutil <= 1) || (WButil <= 1));
   ///////////////////////output statistics in batch mode/////////////////////////:
 
   if(sim_mode==0){
