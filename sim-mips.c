@@ -287,7 +287,6 @@ char *regNumberConverter(char *line){
   
   char *newNewLine = (char *)realloc(newLine, newPos*sizeof(char));
 
-  printf("After regNumberConverter: %s\n", newNewLine);
   return newNewLine;
 }
 
@@ -1002,7 +1001,6 @@ void main (int argc, char *argv[]){
 	}
 	} 
 
-printf("EXCOUNT: %d\n", sim_cycle);
 
   //output statistics in batch mode
 	if(sim_cycle != 0){
